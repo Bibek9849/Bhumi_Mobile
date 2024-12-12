@@ -1,3 +1,4 @@
+import 'package:bhumi_mobile/common/my_snackbar.dart';
 import 'package:bhumi_mobile/view/login_view.dart';
 import 'package:flutter/material.dart';
 
@@ -165,10 +166,15 @@ class _RegisterViewState extends State<RegisterView> {
               child: ElevatedButton(
                 onPressed: () {
                   if (formKey.currentState?.validate() ?? false) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Registration Successful')),
+                    showMySnackBar(
+                      context: context,
+                      message: 'Registration Successful',
                     );
                   }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginView()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

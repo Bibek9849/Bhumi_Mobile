@@ -1,3 +1,5 @@
+import 'package:bhumi_mobile/common/my_snackbar.dart';
+import 'package:bhumi_mobile/view/dashboard_view.dart';
 import 'package:bhumi_mobile/view/register_view.dart';
 import 'package:flutter/material.dart';
 
@@ -107,15 +109,17 @@ class _LoginViewState extends State<LoginView> {
               child: ElevatedButton(
                 onPressed: () {
                   if (formKey.currentState?.validate() ?? false) {
-                    // Proceed with login
                     final contact = contactController.text;
                     final password = passwordController.text;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const DashboardView()),
+                    );
 
-                    // Perform login logic here
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Logging in with $contact'),
-                      ),
+                    showMySnackBar(
+                      context: context,
+                      message: 'Sucessfully Logged In!',
                     );
                   }
                 },
