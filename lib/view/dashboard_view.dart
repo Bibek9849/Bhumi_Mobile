@@ -90,7 +90,7 @@ class _DashboardViewState extends State<DashboardView> {
             ),
             const SizedBox(height: 16),
             const Text(
-              "Crops",
+              "Products",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
