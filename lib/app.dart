@@ -1,5 +1,5 @@
-import 'package:bhumi_mobile/view/home_view.dart';
-
+import 'package:bhumi_mobile/common/core/app_theme/app_theme.dart';
+import 'package:bhumi_mobile/view/welcome_view.dart';
 import 'package:flutter/material.dart';
 
 class MyApp extends StatelessWidget {
@@ -7,9 +7,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeView(),
+      theme: getApplicationTheme(),
+      home: const WelcomeView(),
     );
   }
 }

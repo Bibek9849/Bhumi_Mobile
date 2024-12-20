@@ -1,4 +1,4 @@
-import 'package:bhumi_mobile/view/login_view.dart';
+import 'package:bhumi_mobile/common/product_card.dart';
 import 'package:flutter/material.dart';
 
 class HomeView extends StatefulWidget {
@@ -9,147 +9,110 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  final List<Map<String, String>> _onboardingData = [
-    {
-      'image': 'assets/images/home.png',
-      'title': 'Welcome to Bhumi',
-      'description':
-          'Empowering farmers in Nepal by providing fair pricing and better market access.',
-    },
-    {
-      'image': 'assets/images/home.png',
-      'title': 'Fair Pricing',
-      'description':
-          'Eliminate middlemen and ensure farmers get the best value for their crops.',
-    },
-    {
-      'image': 'assets/images/home.png',
-      'title': 'Enhancing Market Access',
-      'description':
-          'Connect farmers directly with buyers and improve farming opportunities.',
-    },
-  ];
-
-  void _onNext() {
-    if (_currentPage < _onboardingData.length - 1) {
-      _pageController.nextPage(
-          duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-    } else {
-      _goToLogin();
-    }
-  }
-
-  void _goToLogin() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginView()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
-      backgroundColor: const Color.fromRGBO(255, 255, 255, 1),
-      body: SafeArea(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                itemCount: _onboardingData.length,
-                itemBuilder: (context, index) {
-                  final data = _onboardingData[index];
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: screenHeight * 0.4,
-                        height: screenHeight * 0.4,
-                        child: CircleAvatar(
-                          backgroundColor: const Color.fromRGBO(55, 95, 22, 1),
-                          child: ClipOval(
-                            child: Image(
-                              image: AssetImage(data['image']!),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 40,
+                  backgroundImage: AssetImage('assets/images/profile.png'),
+                ),
+                SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Hi, Bibek Pandey",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
-                      const SizedBox(height: 20),
-                      Text(
-                        data['title']!,
-                        style: const TextStyle(
-                          color: Color.fromRGBO(55, 95, 22, 1),
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Good Morning",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black54,
                       ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                        child: Text(
-                          data['description']!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color.fromRGBO(55, 95, 22, 1)),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "Search here..",
                       ),
-                    ],
-                  );
-                },
+                    ),
+                  ),
+                  Icon(Icons.search, color: Color.fromRGBO(55, 95, 22, 1)),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    onPressed: _goToLogin,
-                    child: const Text(
-                      'Skip',
-                      style: TextStyle(
-                        color: Color.fromRGBO(58, 168, 89, 1),
-                        fontWeight: FontWeight.bold,
+            const SizedBox(height: 16),
+            const Text(
+              "Products",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: Center(
+                child: ListView(
+                  children: const [
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: ProductCard(
+                        name: "Hari",
+                        crop: "Maize",
+                        price: "50 per KG",
+                        image: 'assets/images/maize.jpg',
                       ),
                     ),
-                  ),
-                  ElevatedButton(
-                    onPressed: _onNext,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromRGBO(58, 168, 89, 1),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: ProductCard(
+                        name: "Shyam Pandey",
+                        crop: "Rice",
+                        price: "60 per KG",
+                        image: 'assets/images/rice.jpg',
                       ),
                     ),
-                    child: Text(
-                      _currentPage == _onboardingData.length - 1
-                          ? 'Get Started'
-                          : 'Next',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                      child: ProductCard(
+                        name: "Sita",
+                        crop: "Potato",
+                        price: "40 per KG",
+                        image: 'assets/images/pot.jpg',
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
