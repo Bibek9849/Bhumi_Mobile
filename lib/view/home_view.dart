@@ -33,7 +33,7 @@ class _HomeViewState extends State<HomeView> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: Color.fromRGBO(55, 95, 22, 1),
                       ),
                     ),
                     SizedBox(height: 8),

@@ -104,7 +104,6 @@ class _WelcomeViewState extends State<WelcomeView> {
                           style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16,
-                            fontStyle: FontStyle.italic,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -128,6 +127,21 @@ class _WelcomeViewState extends State<WelcomeView> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                  ),
+                  Row(
+                    children: List.generate(_onboardingData.length, (index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: _currentPage == index ? 12 : 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: _currentPage == index
+                              ? const Color.fromRGBO(58, 168, 89, 1)
+                              : Colors.grey,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      );
+                    }),
                   ),
                   ElevatedButton(
                     onPressed: _onNext,

@@ -25,21 +25,22 @@ class _DashboardViewState extends State<DashboardView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: const Color.fromRGBO(55, 95, 22, 1),
         title: const Text(
           'Bhumi',
           style: TextStyle(
             fontFamily: 'Montserrat Bold',
-            fontSize: 40,
+            fontSize: 30,
             color: Colors.white,
           ),
         ),
-        centerTitle: true,
       ),
       body: _bottomScreens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        // backgroundColor: const Color.fromRGBO(55, 95, 22, 1),
-        selectedItemColor: const Color.fromRGBO(55, 95, 22, 1),
+        backgroundColor: const Color.fromRGBO(55, 95, 22, 1),
+        unselectedItemColor: Colors.white,
+        selectedItemColor: const Color.fromARGB(255, 255, 235, 202),
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
         onTap: (index) {
@@ -49,7 +50,6 @@ class _DashboardViewState extends State<DashboardView> {
         },
         items: const [
           BottomNavigationBarItem(
-            backgroundColor: Colors.white,
             icon: Icon(Icons.home),
             label: 'Home',
           ),
