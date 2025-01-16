@@ -1,28 +1,17 @@
-import 'package:bhumi_mobile/features/auth/presentation/view_model/login/login_bloc.dart';
-import 'package:bhumi_mobile/view/login_view.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class OnboardingCubit extends Cubit<void> {
-  OnboardingCubit(this._loginBloc) : super(null);
+class OnboardingCubit extends Cubit<int> {
+  OnboardingCubit() : super(0); // Initial state is 0, the first page.
 
-  final LoginBloc _loginBloc;
+  void goToNextPage() {
+    if (state < 2) {
+      emit(state + 1); // Emit next page index
+    } else {
+      emit(3); // Emit value 3 to indicate the last page, trigger navigation
+    }
+  }
 
-  Future<void> init(BuildContext context) async {
-    await Future.delayed(const Duration(seconds: 2), () async {
-      // Open Login page or Onboarding Screen
-
-      if (context.mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => BlocProvider.value(
-              value: _loginBloc,
-              child: const LoginView(),
-            ),
-          ),
-        );
-      }
-    });
+  void skipToLogin() {
+    emit(3); // Emit value 3 to skip directly to the login page
   }
 }
