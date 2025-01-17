@@ -1,6 +1,7 @@
-import 'package:bhumi_mobile/common/my_snackbar.dart';
-import 'package:bhumi_mobile/view/login_view.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view/login_view.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -72,7 +73,7 @@ class _RegisterViewState extends State<RegisterView> {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your phone number';
                           }
-                          if (!RegExp(r'^\d{10}\$').hasMatch(value)) {
+                          if (!RegExp(r'^\d{10}$').hasMatch(value)) {
                             return 'Enter a valid 10-digit phone number';
                           }
                           return null;
@@ -180,13 +181,18 @@ class _RegisterViewState extends State<RegisterView> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   alignment: Alignment.center,
-                  child: GestureDetector(
-                    onTap: () {
+                  child: ElevatedButton(
+                    onPressed: () {
                       if (formKey.currentState?.validate() ?? false) {
-                        showMySnackBar(
-                          context: context,
-                          message: 'Registration Successful',
-                        );
+                        context.read<SignupBloc>().add(
+                              RegisterUser(
+                                context: context,
+                                fullName: fullNameController.text,
+                                contact: phoneController.text,
+                                address: addressController.text,
+                                password: passwordController.text,
+                              ),
+                            );
                       }
                     },
                     child: const Text(
