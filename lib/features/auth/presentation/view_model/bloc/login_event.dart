@@ -1,8 +1,40 @@
-abstract class LoginEvent {}
+part of 'login_bloc.dart';
 
-class LoginButtonPressed extends LoginEvent {
+sealed class LoginEvent extends Equatable {
+  const LoginEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class NavigateRegisterScreenEvent extends LoginEvent {
+  final BuildContext context;
+  final Widget destination;
+
+  const NavigateRegisterScreenEvent({
+    required this.context,
+    required this.destination,
+  });
+}
+
+class NavigateHomeScreenEvent extends LoginEvent {
+  final BuildContext context;
+  final Widget destination;
+
+  const NavigateHomeScreenEvent({
+    required this.context,
+    required this.destination,
+  });
+}
+
+class LoginUserEvent extends LoginEvent {
+  final BuildContext context;
   final String contact;
   final String password;
 
-  LoginButtonPressed({required this.contact, required this.password});
+  const LoginUserEvent({
+    required this.context,
+    required this.contact,
+    required this.password,
+  });
 }
