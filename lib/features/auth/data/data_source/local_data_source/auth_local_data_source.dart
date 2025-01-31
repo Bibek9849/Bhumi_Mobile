@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bhumi_mobile/core/network/hive_service.dart';
 import 'package:bhumi_mobile/features/auth/data/data_source/auth_data_source.dart';
 import 'package:bhumi_mobile/features/auth/data/model/auth_hive_model.dart';
@@ -14,6 +16,8 @@ class AuthLocalDataSource implements IAuthDataSource {
     return Future.value(const AuthEntity(
       userId: "1",
       fullName: "",
+      email: "",
+      image: null,
       contact: "",
       address: "",
       password: "",
@@ -43,8 +47,7 @@ class AuthLocalDataSource implements IAuthDataSource {
     }
   }
 
-  // @override
-  // Future<String> uploadProfilePicture(File file) {
-  //   throw UnimplementedError();
-  // }
+  Future<String> uploadProfilePicture(File file) {
+    throw UnimplementedError();
+  }
 }
