@@ -15,7 +15,7 @@ class _DashboardViewState extends State<DashboardView> {
   int _selectedIndex = 0;
 
   final List<Widget> _bottomScreens = [
-    const HomeView(),
+    const HomeScreen(),
     const ProductView(),
     const CartView(),
     const ProfileView(),
@@ -26,19 +26,31 @@ class _DashboardViewState extends State<DashboardView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color.fromRGBO(55, 95, 22, 1),
-        title: const Text(
-          'Bhumi',
-          style: TextStyle(
-            fontFamily: 'Montserrat Bold',
-            fontSize: 30,
-            color: Colors.white,
-          ),
+        backgroundColor: const Color.fromARGB(255, 197, 201, 194),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Bhumi',
+              style: TextStyle(
+                fontFamily: 'Montserrat Bold',
+                fontSize: 30,
+                color: Color.fromARGB(255, 132, 46, 46),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(
+                Icons.person,
+                color: Color.fromARGB(255, 132, 46, 46),
+              ),
+              onPressed: () {},
+            ),
+          ],
         ),
       ),
       body: _bottomScreens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color.fromRGBO(55, 95, 22, 1),
+        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
         unselectedItemColor: Colors.white,
         selectedItemColor: const Color.fromARGB(255, 255, 235, 202),
         type: BottomNavigationBarType.fixed,

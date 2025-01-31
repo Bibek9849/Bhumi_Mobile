@@ -1,7 +1,7 @@
-// import 'package:bhumi_mobile/common/my_snackbar.dart';
-// import 'package:bhumi_mobile/view/dashboard_view.dart';
-// import 'package:bhumi_mobile/view/register_view.dart';
+// import 'package:bhumi_mobile/features/auth/presentation/view/register_view.dart';
+// import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
 // import 'package:flutter/material.dart';
+// import 'package:flutter_bloc/flutter_bloc.dart';
 
 // class LoginView extends StatefulWidget {
 //   const LoginView({super.key});
@@ -12,53 +12,71 @@
 
 // class _LoginViewState extends State<LoginView> {
 //   final formKey = GlobalKey<FormState>();
-//   final TextEditingController contactController = TextEditingController();
+//   final TextEditingController emailController = TextEditingController();
 //   final TextEditingController passwordController = TextEditingController();
 //   bool isPasswordVisible = false;
 
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       backgroundColor: Colors.white,
+//       backgroundColor: const Color(0xFFEAF4EA),
 //       body: Center(
 //         child: SingleChildScrollView(
-//           child: Column(
-//             crossAxisAlignment: CrossAxisAlignment.center,
-//             mainAxisAlignment: MainAxisAlignment.center,
-//             children: [
-//               const SizedBox(height: 50),
-//               Image.asset(
-//                 'assets/images/logo.png',
-//                 height: 100,
-//               ),
-//               const SizedBox(height: 20),
-//               Padding(
-//                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
-//                 child: Form(
+//           child: Padding(
+//             padding: const EdgeInsets.symmetric(horizontal: 20.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.center,
+//               children: [
+//                 // Illustration
+//                 SizedBox(
+//                   height: 200,
+//                   child: Image.asset(
+//                     'assets/images/l.png',
+//                     fit: BoxFit.contain,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 20),
+
+//                 // Login Text
+//                 const Text(
+//                   'Login',
+//                   style: TextStyle(
+//                     fontSize: 28,
+//                     fontWeight: FontWeight.bold,
+//                     color: Colors.green,
+//                   ),
+//                 ),
+//                 const SizedBox(height: 20),
+
+//                 // Email Input
+//                 Form(
 //                   key: formKey,
 //                   child: Column(
 //                     children: [
 //                       TextFormField(
-//                         controller: contactController,
-//                         keyboardType: TextInputType.phone,
+//                         controller: emailController,
 //                         decoration: InputDecoration(
-//                           labelText: 'Contact Number',
-//                           prefixIcon: const Icon(Icons.phone),
+//                           labelText: 'Email ID',
+//                           prefixIcon: const Icon(Icons.email),
 //                           border: OutlineInputBorder(
 //                             borderRadius: BorderRadius.circular(30),
 //                           ),
 //                         ),
 //                         validator: (value) {
 //                           if (value == null || value.isEmpty) {
-//                             return 'Please enter your contact number';
+//                             return 'Please enter your email ID';
 //                           }
-//                           if (!RegExp(r'^\d{10}$').hasMatch(value)) {
-//                             return 'Enter a valid 10-digit phone number';
+//                           if (!RegExp(
+//                                   r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}\$')
+//                               .hasMatch(value)) {
+//                             return 'Enter a valid email address';
 //                           }
 //                           return null;
 //                         },
 //                       ),
-//                       const SizedBox(height: 20),
+//                       const SizedBox(height: 15),
+
+//                       // Password Input
 //                       TextFormField(
 //                         controller: passwordController,
 //                         obscureText: !isPasswordVisible,
@@ -86,18 +104,22 @@
 //                             return 'Please enter your password';
 //                           }
 //                           if (value.length < 6) {
-//                             return 'Password must be at least 6 characters long';
+//                             return 'Password must be at least 6 characters';
 //                           }
 //                           return null;
 //                         },
 //                       ),
 //                       const SizedBox(height: 10),
+
+//                       // Forgot Password
 //                       Align(
 //                         alignment: Alignment.centerRight,
 //                         child: TextButton(
-//                           onPressed: () {},
+//                           onPressed: () {
+//                             // Handle Forgot Password
+//                           },
 //                           child: const Text(
-//                             'Forgot password?',
+//                             'Forgot Password?',
 //                             style: TextStyle(color: Colors.black),
 //                           ),
 //                         ),
@@ -105,38 +127,31 @@
 //                     ],
 //                   ),
 //                 ),
-//               ),
-//               const SizedBox(height: 20),
-//               SizedBox(
-//                 width: MediaQuery.of(context).size.width * 0.8,
-//                 child: GestureDetector(
-//                   onTap: () {
-//                     if (formKey.currentState?.validate() ?? false) {
-//                       final contact = contactController.text;
-//                       final password = passwordController.text;
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                             builder: (context) => const DashboardView()),
-//                       );
 
-//                       showMySnackBar(
-//                         context: context,
-//                         message: 'Successfully Logged In!',
-//                       );
-//                     }
-//                   },
-//                   child: Container(
-//                     padding: const EdgeInsets.symmetric(vertical: 15),
-//                     decoration: BoxDecoration(
-//                       gradient: const LinearGradient(
-//                         colors: [Colors.green, Colors.teal],
-//                         begin: Alignment.centerLeft,
-//                         end: Alignment.centerRight,
+//                 const SizedBox(height: 20),
+
+//                 // Login Button
+//                 SizedBox(
+//                   width: MediaQuery.of(context).size.width * 0.8,
+//                   child: ElevatedButton(
+//                     onPressed: () {
+//                       if (formKey.currentState?.validate() ?? false) {
+//                         context.read<LoginBloc>().add(
+//                               LoginUserEvent(
+//                                 context: context,
+//                                 contact: emailController.text,
+//                                 password: passwordController.text,
+//                               ),
+//                             );
+//                       }
+//                     },
+//                     style: ElevatedButton.styleFrom(
+//                       backgroundColor: Colors.green,
+//                       shape: RoundedRectangleBorder(
+//                         borderRadius: BorderRadius.circular(30),
 //                       ),
-//                       borderRadius: BorderRadius.circular(30),
+//                       padding: const EdgeInsets.symmetric(vertical: 15),
 //                     ),
-//                     alignment: Alignment.center,
 //                     child: const Text(
 //                       'Login',
 //                       style: TextStyle(
@@ -147,63 +162,65 @@
 //                     ),
 //                   ),
 //                 ),
-//               ),
-//               const SizedBox(height: 20),
-//               SizedBox(
-//                 width: MediaQuery.of(context).size.width * 0.8,
-//                 child: OutlinedButton.icon(
-//                   onPressed: () {
-//                     showMySnackBar(
-//                       context: context,
-//                       message: 'Google Sign-In not implemented yet!',
-//                     );
-//                   },
-//                   icon: const Icon(
-//                     Icons.g_mobiledata,
-//                     color: Colors.red,
-//                     size: 30,
-//                   ),
-//                   label: const Text(
-//                     'Sign in with Google',
-//                     style: TextStyle(
-//                       color: Colors.black,
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                   style: OutlinedButton.styleFrom(
-//                     side: const BorderSide(color: Colors.grey),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(30),
-//                     ),
-//                     padding: const EdgeInsets.symmetric(vertical: 15),
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(height: 20),
-//               Row(
-//                 mainAxisAlignment: MainAxisAlignment.center,
-//                 children: [
-//                   const Text("Don’t have an account? "),
-//                   GestureDetector(
-//                     onTap: () {
-//                       Navigator.push(
-//                         context,
-//                         MaterialPageRoute(
-//                             builder: (context) => const RegisterView()),
-//                       );
+
+//                 const SizedBox(height: 20),
+
+//                 // Google Sign-In Button
+//                 SizedBox(
+//                   width: MediaQuery.of(context).size.width * 0.8,
+//                   child: OutlinedButton.icon(
+//                     onPressed: () {
+//                       // Handle Google Sign-In
 //                     },
-//                     child: const Text(
-//                       "Register here",
+//                     icon: const Icon(
+//                       Icons.g_mobiledata,
+//                       color: Colors.red,
+//                       size: 30,
+//                     ),
+//                     label: const Text(
+//                       'Login with Google',
 //                       style: TextStyle(
-//                         color: Colors.green,
-//                         fontWeight: FontWeight.bold,
+//                         color: Colors.black,
+//                         fontSize: 16,
 //                       ),
 //                     ),
+//                     style: OutlinedButton.styleFrom(
+//                       side: const BorderSide(color: Colors.grey),
+//                       shape: RoundedRectangleBorder(
+//                         borderRadius: BorderRadius.circular(30),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(vertical: 15),
+//                     ),
 //                   ),
-//                 ],
-//               ),
-//               const SizedBox(height: 30),
-//             ],
+//                 ),
+
+//                 const SizedBox(height: 20),
+
+//                 // Register Link
+//                 Row(
+//                   mainAxisAlignment: MainAxisAlignment.center,
+//                   children: [
+//                     const Text("New to Logistics? "),
+//                     GestureDetector(
+//                       onTap: () {
+//                         Navigator.push(
+//                           context,
+//                           MaterialPageRoute(
+//                               builder: (context) => const RegisterView()),
+//                         );
+//                       },
+//                       child: const Text(
+//                         "Register",
+//                         style: TextStyle(
+//                           color: Colors.green,
+//                           fontWeight: FontWeight.bold,
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+//               ],
+//             ),
 //           ),
 //         ),
 //       ),
