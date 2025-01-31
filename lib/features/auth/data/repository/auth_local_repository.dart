@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bhumi_mobile/core/error/failure.dart';
 import 'package:bhumi_mobile/features/auth/data/data_source/local_data_source/auth_local_data_source.dart';
 import 'package:bhumi_mobile/features/auth/domain/entity/auth_entity.dart';
@@ -41,9 +43,9 @@ class AuthLocalRepository implements IAuthRepository {
     }
   }
 
-  // @override
-  // Future<Either<Failure, String>> uploadProfilePicture(File file) async {
-  //   // TODO: implement uploadProfilePicture
-  //   throw UnimplementedError();
-  // }
+  @override
+  Future<Either<Failure, String>> uploadProfilePicture(File file) async {
+    // TODO: implement uploadProfilePicture
+    throw UnimplementedError();
+  }
 }
