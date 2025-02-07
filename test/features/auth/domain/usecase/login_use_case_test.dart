@@ -63,5 +63,42 @@ void main() {
       expect(result, const Left(failure));
       verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
     });
+
+    // Test case for invalid input (empty contact or password)
+    test('should handle invalid input (empty contact or password)', () async {
+      const invalidParams = LoginParams(contact: '', password: '');
+
+      final result = await loginUseCase(invalidParams);
+
+      expect(
+          result,
+          const Left(
+              ApiFailure(message: 'Contact or password cannot be empty')));
+      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
+    });
+
+    // Test case for invalid input (empty contact)
+    test('should return ApiFailure when contact is empty', () async {
+      const invalidParams = LoginParams(contact: '', password: testPassword);
+
+      final result = await loginUseCase(invalidParams);
+
+      expect(
+          result,
+          const Left(
+              ApiFailure(message: 'Contact or password cannot be empty')));
+      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
+    });
+
+    // Test case for invalid input (empty password)
+    test('should return ApiFailure when password is empty', () async {
+      const invalidParams = LoginParams(contact: testContact, password: '');
+      final result = await loginUseCase(invalidParams);
+      expect(
+          result,
+          const Left(
+              ApiFailure(message: 'Contact or password cannot be empty')));
+      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
+    });
   });
 }
