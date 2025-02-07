@@ -51,5 +51,17 @@ void main() {
       expect(result, const Left(failure));
       verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
     });
+
+    // Test case for failed login, ensuring token is not saved if login fails
+    test('should not save token if login fails', () async {
+      const failure = ApiFailure(message: 'Login failed', statusCode: 500);
+      when(() => mockAuthRepository.loginStudent(testContact, testPassword))
+          .thenAnswer((_) async => const Left(failure));
+
+      final result = await loginUseCase(params);
+
+      expect(result, const Left(failure));
+      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
+    });
   });
 }
