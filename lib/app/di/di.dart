@@ -10,7 +10,10 @@ import 'package:bhumi_mobile/features/auth/domain/use_case/register_user_usecase
 import 'package:bhumi_mobile/features/auth/domain/use_case/upload_image_usecase.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
+import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
 import 'package:bhumi_mobile/features/onboarding/presentation/view_model/onboarding_cubit.dart';
+import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/profile_bloc.dart';
 import 'package:bhumi_mobile/features/splash/presentation/view_model/splash_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -27,6 +30,9 @@ Future<void> initDependencies() async {
   await _initOnboardingDependencies();
   await _initRegisterDependencies();
   await _initLoginDependencies();
+  await _initHomeDependencies();
+  await _initDashboardDependencies();
+  await _initProfileDependencies();
 }
 
 Future<void> _initSharedPreferences() async {
@@ -102,7 +108,7 @@ _initLoginDependencies() async {
 
   getIt.registerLazySingleton<LoginUseCase>(
     () => LoginUseCase(
-      getIt<AuthLocalRepository>(),
+      getIt<AuthRemoteRepository>(),
       getIt<TokenSharedPrefs>(),
     ),
   );
@@ -110,7 +116,26 @@ _initLoginDependencies() async {
   getIt.registerFactory<LoginBloc>(
     () => LoginBloc(
       signupBloc: getIt<SignupBloc>(),
+      homeCubit: getIt<HomeCubit>(),
       loginUseCase: getIt<LoginUseCase>(),
     ),
+  );
+}
+
+_initHomeDependencies() async {
+  getIt.registerFactory<HomeCubit>(
+    () => HomeCubit(),
+  );
+}
+
+_initDashboardDependencies() async {
+  getIt.registerFactory<DashboardBloc>(
+    () => DashboardBloc(),
+  );
+}
+
+_initProfileDependencies() async {
+  getIt.registerFactory<ProfileBloc>(
+    () => ProfileBloc(),
   );
 }
