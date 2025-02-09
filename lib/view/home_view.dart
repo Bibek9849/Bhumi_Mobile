@@ -1,178 +1,211 @@
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+// class HomeScreen extends StatelessWidget {
+//   final List<String> categories = ["All", "Vegetables", "Fruits", "Spice"];
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CategoryFilters(),
-              SizedBox(height: 16),
-              ProductSection(title: "Terlaris hari ini", products: [
-                ProductItem("Broccoli", "IDR 16.000/kg", "assets/broccoli.png"),
-                ProductItem("Tomato", "IDR 8.000/kg", "assets/images/pot.jpg"),
-                ProductItem("Green Pepper", "IDR 14.500/kg", "assets/home.png"),
-              ]),
-              SizedBox(height: 16),
-              PromoSection(),
-              SizedBox(height: 16),
-              ProductSection(title: "Flashsale 🔥", products: [
-                ProductItem(
-                    "Green Broccoli", "IDR 16.000/kg", "assets/broccoli.png"),
-                ProductItem("Red Tomato", "IDR 8.000/kg", "assets/tomato.png"),
-                ProductItem("Sawi Hijau", "IDR 14.500/kg", "assets/pepper.png"),
-              ]),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//   final List<Map<String, String>> products = [
+//     {
+//       "name": "Broccoli",
+//       "price": "NPR: 16.00/kg",
+//       "image": "assets/images/bro.jpeg", // Add actual image paths
+//     },
+//     {
+//       "name": "Tomato",
+//       "price": "NPR: 8.00/kg",
+//       "image": "assets/images/tom.jpeg",
+//     },
+//     {
+//       "name": "Broccoli",
+//       "price": "NPR: 16.00/kg",
+//       "image": "assets/images/bro.jpeg",
+//     },
+//   ];
 
-class CategoryFilters extends StatelessWidget {
-  const CategoryFilters({super.key});
+//   HomeScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        FilterChip(label: "All"),
-        FilterChip(label: "Vegetables"),
-        FilterChip(label: "Fruits"),
-        FilterChip(label: "Spice"),
-      ],
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: SafeArea(
+//         child: Padding(
+//           padding: const EdgeInsets.all(16.0),
+//           child: SingleChildScrollView(
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 // Profile Row (Image on Left)
+//                 const Row(
+//                   children: [
+//                     CircleAvatar(
+//                       radius: 20,
+//                       backgroundImage:
+//                           AssetImage("assets/images/home.png"), // Profile Image
+//                     ),
+//                   ],
+//                 ),
 
-class FilterChip extends StatelessWidget {
-  final String label;
-  const FilterChip({super.key, required this.label});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.green.shade100,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label,
-          style: const TextStyle(
-              color: Colors.green, fontWeight: FontWeight.bold)),
-    );
-  }
-}
+//                 const SizedBox(height: 10),
 
-class ProductSection extends StatelessWidget {
-  final String title;
-  final List<ProductItem> products;
-  const ProductSection(
-      {super.key, required this.title, required this.products});
+//                 // Welcome Message
+//                 const Text(
+//                   "Welcome,\nBibek Pandey",
+//                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+//                 ),
+//                 const SizedBox(height: 16),
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 140,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: products,
-          ),
-        ),
-      ],
-    );
-  }
-}
+//                 // Search Bar
+//                 Container(
+//                   padding: const EdgeInsets.symmetric(horizontal: 16),
+//                   decoration: BoxDecoration(
+//                     color: Colors.grey[200],
+//                     borderRadius: BorderRadius.circular(10),
+//                   ),
+//                   child: const TextField(
+//                     decoration: InputDecoration(
+//                       hintText: "Search vegetables..",
+//                       border: InputBorder.none,
+//                       prefixIcon: Icon(Icons.search, color: Colors.grey),
+//                     ),
+//                   ),
+//                 ),
+//                 const SizedBox(height: 16),
 
-class ProductItem extends StatelessWidget {
-  final String name;
-  final String price;
-  final String image;
+//                 // Categories
+//                 SingleChildScrollView(
+//                   scrollDirection: Axis.horizontal,
+//                   child: Row(
+//                     children: categories.map((category) {
+//                       return Padding(
+//                         padding: const EdgeInsets.symmetric(horizontal: 6),
+//                         child: Chip(
+//                           label: Text(category),
+//                           backgroundColor: category == "All"
+//                               ? Colors.green
+//                               : Colors.grey[200],
+//                           labelStyle: TextStyle(
+//                             color:
+//                                 category == "All" ? Colors.white : Colors.black,
+//                           ),
+//                         ),
+//                       );
+//                     }).toList(),
+//                   ),
+//                 ),
+//                 const SizedBox(height: 16),
 
-  const ProductItem(this.name, this.price, this.image, {super.key});
+//                 // Product Section
+//                 const Text("Our Products",
+//                     style:
+//                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//                 const SizedBox(height: 10),
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 4, spreadRadius: 1),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(image, height: 50),
-          const SizedBox(height: 8),
-          Text(name,
-              style:
-                  const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(price,
-              style: const TextStyle(fontSize: 12, color: Colors.green)),
-          const SizedBox(height: 4),
-          const Icon(Icons.add_circle, color: Colors.green),
-        ],
-      ),
-    );
-  }
-}
+//                 SingleChildScrollView(
+//                   scrollDirection: Axis.horizontal,
+//                   child: Row(
+//                     children: products.map((product) {
+//                       return Padding(
+//                         padding: const EdgeInsets.only(right: 12),
+//                         child: ProductCard(
+//                           name: product["name"]!,
+//                           price: product["price"]!,
+//                           image: product["image"]!, // Show Product Image
+//                         ),
+//                       );
+//                     }).toList(),
+//                   ),
+//                 ),
 
-class PromoSection extends StatelessWidget {
-  const PromoSection({super.key});
+//                 const SizedBox(height: 20),
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text("Discount 50%",
-              style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const Text("*Limited",
-              style: TextStyle(color: Colors.white70, fontSize: 12)),
-          const SizedBox(height: 8),
-          const Text("SPESIAL PENGGUNA BARU",
-              style: TextStyle(
-                  color: Colors.yellow,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.green, backgroundColor: Colors.white),
-            child: const Text("Claim voucher"),
-          ),
-        ],
-      ),
-    );
-  }
-}
+//                 // Promotions
+//                 const Text("Promo untukmu",
+//                     style:
+//                         TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+//                 const SizedBox(height: 10),
+//                 Container(
+//                   padding: const EdgeInsets.all(16),
+//                   decoration: BoxDecoration(
+//                     color: Colors.green,
+//                     borderRadius: BorderRadius.circular(12),
+//                   ),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       const Text("Discount 50%",
+//                           style: TextStyle(
+//                               color: Colors.white,
+//                               fontSize: 20,
+//                               fontWeight: FontWeight.bold)),
+//                       const Text("SPESIAL PENGGUNA BARU",
+//                           style: TextStyle(color: Colors.white, fontSize: 16)),
+//                       const SizedBox(height: 8),
+//                       ElevatedButton(
+//                         onPressed: () {},
+//                         style: ElevatedButton.styleFrom(
+//                             backgroundColor: Colors.white,
+//                             foregroundColor: Colors.green),
+//                         child: const Text("Claim voucher"),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// // Product Card Widget
+// class ProductCard extends StatelessWidget {
+//   final String name;
+//   final String price;
+//   final String image; // Image Parameter
+
+//   const ProductCard(
+//       {super.key,
+//       required this.name,
+//       required this.price,
+//       required this.image});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       width: 120,
+//       padding: const EdgeInsets.all(10),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(12),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.grey.withOpacity(0.2),
+//             blurRadius: 5,
+//             spreadRadius: 2,
+//           ),
+//         ],
+//       ),
+//       child: Column(
+//         children: [
+//           Image.asset(image, height: 60, fit: BoxFit.cover), // Display Image
+//           const SizedBox(height: 8),
+//           Text(name,
+//               style:
+//                   const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+//           Text(price,
+//               style: const TextStyle(fontSize: 12, color: Colors.green)),
+//           const SizedBox(height: 8),
+//           ElevatedButton(
+//             onPressed: () {},
+//             style: ElevatedButton.styleFrom(
+//               backgroundColor: Colors.green,
+//               shape: const CircleBorder(),
+//             ),
+//             child: const Icon(Icons.add, color: Colors.white),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

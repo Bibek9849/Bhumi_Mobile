@@ -12,8 +12,8 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
-  final _contactController = TextEditingController(text: 'kiran');
-  final _passwordController = TextEditingController(text: 'kiran123');
+  final _contactController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool isPasswordVisible = false;
 
   @override
@@ -55,7 +55,7 @@ class _LoginViewState extends State<LoginView> {
                     TextFormField(
                       controller: _contactController,
                       decoration: InputDecoration(
-                        labelText: 'Email ID',
+                        labelText: 'Contact',
                         prefixIcon: const Icon(Icons.phone),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(30),
@@ -63,7 +63,7 @@ class _LoginViewState extends State<LoginView> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your email ID';
+                          return 'Please enter your contact';
                         }
                         return null;
                       },

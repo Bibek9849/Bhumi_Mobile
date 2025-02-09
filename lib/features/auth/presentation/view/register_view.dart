@@ -119,7 +119,7 @@ class _RegisterViewState extends State<RegisterView> {
                       radius: 50,
                       backgroundImage: _img != null
                           ? FileImage(_img!)
-                          : const AssetImage('assets/images/profile.png')
+                          : const AssetImage('assets/images/ico.png')
                               as ImageProvider,
                     ),
                   ),
@@ -159,7 +159,7 @@ class _RegisterViewState extends State<RegisterView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter email';
+                              return 'Please enter contact';
                             }
                             return null;
                           },
