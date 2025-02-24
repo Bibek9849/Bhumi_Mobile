@@ -1,4 +1,5 @@
 import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/profile_bloc.dart';
+import 'package:bhumi_mobile/view/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -37,8 +38,7 @@ class ProfileView extends StatelessWidget {
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.grey,
-                      backgroundImage: NetworkImage(
-                          state.profileImage), // Display profile image
+                      backgroundImage: NetworkImage(state.profileImage),
                       child: const Icon(Icons.person,
                           size: 50, color: Colors.white),
                     ),
@@ -50,13 +50,8 @@ class ProfileView extends StatelessWidget {
                     ),
                     const SizedBox(height: 20),
                     _buildProfileButton(context, Icons.person, "Edit Profile",
-                        EditProfileEvent()),
-                    _buildProfileButton(context, Icons.agriculture, "My Crop",
-                        EditProfileEvent()),
-                    _buildProfileButton(context, Icons.receipt_long,
-                        "Ordered Details", EditProfileEvent()),
-                    _buildProfileButton(context, Icons.lock, "Update Password",
-                        EditProfileEvent()),
+                        event: EditProfileEvent(),
+                        navigateTo: const EditProfileView()),
                     const SizedBox(height: 10),
                     ElevatedButton.icon(
                       onPressed: () {
@@ -85,16 +80,21 @@ class ProfileView extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileButton(
-      BuildContext context, IconData icon, String title, ProfileEvent event) {
+  Widget _buildProfileButton(BuildContext context, IconData icon, String title,
+      {ProfileEvent? event, Widget? navigateTo}) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () {
-          context
-              .read<ProfileBloc>()
-              .add(event); // Dispatch event on button press
+          if (navigateTo != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => navigateTo),
+            );
+          } else if (event != null) {
+            context.read<ProfileBloc>().add(event);
+          }
         },
         icon: Icon(icon, color: Colors.white),
         label: Text(title, style: const TextStyle(fontSize: 16)),

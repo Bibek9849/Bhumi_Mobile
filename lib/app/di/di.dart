@@ -10,6 +10,10 @@ import 'package:bhumi_mobile/features/auth/domain/use_case/register_user_usecase
 import 'package:bhumi_mobile/features/auth/domain/use_case/upload_image_usecase.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/category/data/data_source/remote_datasource/category_remote_data_source.dart';
+import 'package:bhumi_mobile/features/dashboard/data/data_source/remote_datasource/product_remote_datasource.dart';
+import 'package:bhumi_mobile/features/dashboard/data/repository/product_remote_repository.dart';
+import 'package:bhumi_mobile/features/dashboard/domain/use_case/get_all_product_usecase.dart';
 import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
 import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
 import 'package:bhumi_mobile/features/onboarding/presentation/view_model/onboarding_cubit.dart';
@@ -33,6 +37,7 @@ Future<void> initDependencies() async {
   await _initHomeDependencies();
   await _initDashboardDependencies();
   await _initProfileDependencies();
+  await _initCategoryDependencies();
 }
 
 Future<void> _initSharedPreferences() async {
@@ -129,13 +134,44 @@ _initHomeDependencies() async {
 }
 
 _initDashboardDependencies() async {
+  // =========================== Data Source ===========================
+
+  getIt.registerLazySingleton<ProductRemoteDataSource>(
+    () => ProductRemoteDataSource(
+      dio: getIt<Dio>(),
+    ),
+  );
+  // =========================== Repository ===========================
+  getIt.registerLazySingleton(
+    () => ProductRemoteRepository(
+      remoteDataSource: getIt<ProductRemoteDataSource>(),
+    ),
+  );
+  // =========================== Usecases ===========================
+
+  getIt.registerLazySingleton<GetAllProductUseCase>(
+    () => GetAllProductUseCase(
+        productRepository: getIt<ProductRemoteRepository>()),
+  );
+  // =========================== Bloc ===========================
+
   getIt.registerFactory<DashboardBloc>(
-    () => DashboardBloc(),
+    () => DashboardBloc(
+      getAllProductUseCase: getIt<GetAllProductUseCase>(),
+    ),
   );
 }
 
 _initProfileDependencies() async {
   getIt.registerFactory<ProfileBloc>(
     () => ProfileBloc(),
+  );
+}
+
+_initCategoryDependencies() async {
+  getIt.registerLazySingleton<CategoryRemoteDataSource>(
+    () => CategoryRemoteDataSource(
+      dio: getIt<Dio>(),
+    ),
   );
 }
