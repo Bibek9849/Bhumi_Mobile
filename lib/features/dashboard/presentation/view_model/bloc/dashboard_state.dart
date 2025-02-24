@@ -1,17 +1,35 @@
 part of 'dashboard_bloc.dart';
 
-abstract class DashboardState {}
+class DashboardState extends Equatable {
+  final List<ProductEntity> products;
+  final bool isLoading;
+  final String? error;
 
-class HomeInitialState extends DashboardState {}
+  const DashboardState({
+    required this.products,
+    required this.isLoading,
+    this.error,
+  });
 
-class ProductsLoadingState extends DashboardState {}
+  factory DashboardState.initial() {
+    return const DashboardState(
+      products: [],
+      isLoading: false,
+    );
+  }
 
-class ProductsLoadedState extends DashboardState {
-  final List<Map<String, String>> products;
-  ProductsLoadedState(this.products);
-}
+  DashboardState copyWith({
+    List<ProductEntity>? products,
+    bool? isLoading,
+    String? error,
+  }) {
+    return DashboardState(
+      products: products ?? this.products,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+    );
+  }
 
-class ProductsErrorState extends DashboardState {
-  final String message;
-  ProductsErrorState(this.message);
+  @override
+  List<Object?> get props => [products, isLoading, error];
 }

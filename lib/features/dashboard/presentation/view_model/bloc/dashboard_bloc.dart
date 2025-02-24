@@ -1,51 +1,43 @@
+import 'package:bhumi_mobile/features/dashboard/domain/entity/product_entity.dart';
+import 'package:bhumi_mobile/features/dashboard/domain/use_case/get_all_product_usecase.dart';
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 part 'dashboard_event.dart';
 part 'dashboard_state.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
-  final List<String> categories = ["All", "Vegetables", "Fruits", "Spice"];
+  final GetAllProductUseCase _getAllProductUseCase;
 
-  final List<Map<String, String>> _allProducts = [
-    {
-      "name": "Broccoli",
-      "price": "NPR: 16.00/kg",
-      "image": "assets/images/bro.jpeg", // Add actual image paths
-    },
-    {
-      "name": "Tomato",
-      "price": "NPR: 8.00/kg",
-      "image": "assets/images/tom.jpeg",
-    },
-    {
-      "name": "Broccoli",
-      "price": "NPR: 16.00/kg",
-      "image": "assets/images/bro.jpeg",
-    },
-  ];
+  DashboardBloc({
+    required GetAllProductUseCase getAllProductUseCase,
+  })  : _getAllProductUseCase = getAllProductUseCase,
+        super(DashboardState.initial()) {
+    on<LoadProducts>(_onLoadProducts);
 
-  DashboardBloc() : super(HomeInitialState());
+    // Call this event whenever the bloc is created to load the batches
+    add(LoadProducts());
+  }
 
-  @override
-  Stream<DashboardState> mapEventToState(DashboardEvent event) async* {
-    if (event is LoadProductsEvent) {
-      yield ProductsLoadingState();
-      await Future.delayed(const Duration(seconds: 1)); // Simulating delay
-      yield ProductsLoadedState(_allProducts);
-    } else if (event is SearchProductEvent) {
-      yield ProductsLoadingState();
-      await Future.delayed(const Duration(seconds: 1));
-      final filteredProducts = _allProducts
-          .where((product) => product['name']!
-              .toLowerCase()
-              .contains(event.query.toLowerCase()))
-          .toList();
-      yield ProductsLoadedState(filteredProducts);
-    } else if (event is SelectCategoryEvent) {
-      yield ProductsLoadingState();
-      await Future.delayed(const Duration(seconds: 1)); // Simulating delay
-      // For simplicity, we're not actually filtering by category here
-      yield ProductsLoadedState(_allProducts);
-    }
+  Future<void> _onLoadProducts(
+      LoadProducts event, Emitter<DashboardState> emit) async {
+    emit(state.copyWith(isLoading: true));
+
+    final result = await _getAllProductUseCase.call();
+
+    result.fold(
+      (failure) {
+        print("API Error: ${failure.message}");
+        emit(state.copyWith(isLoading: false, error: failure.message));
+      },
+      (products) {
+        print("Fetched Products: ${products.length}"); // Debugging
+        for (var product in products) {
+          print("Product Name: ${product.name}, Price: ${product.price}");
+        }
+        emit(state.copyWith(isLoading: false, products: products));
+      },
+    );
   }
 }
