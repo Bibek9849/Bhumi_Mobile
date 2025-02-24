@@ -1,16 +1,16 @@
-import 'package:bhumi_mobile/common/product_card.dart';
+import 'package:bhumi_mobile/features/dashboard/domain/entity/product_entity.dart';
 import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
+import 'package:bhumi_mobile/features/product_details/presentation/view/product_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DashboardView extends StatelessWidget {
-  final List<String> categories = ["All", "Vegetables", "Fruits", "Spice"];
-
-  DashboardView({super.key});
+  const DashboardView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -18,104 +18,187 @@ class DashboardView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Profile Row (Image on Left)
-                const Row(
+                // Header with profile & cart icons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    const CircleAvatar(
+                      backgroundImage: AssetImage("assets/images/profile.png"),
+                    ),
                     CircleAvatar(
-                      radius: 20,
-                      backgroundImage:
-                          AssetImage("assets/images/home.png"), // Profile Image
+                      backgroundColor: Colors.purple.shade100,
+                      child:
+                          const Icon(Icons.shopping_bag, color: Colors.purple),
                     ),
                   ],
                 ),
-                const SizedBox(height: 10),
-                // Welcome Message
-                const Text(
-                  "Welcome,\nBibek Pandey",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
                 const SizedBox(height: 16),
+
                 // Search Bar
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: TextField(
-                    onChanged: (query) {
-                      context
-                          .read<DashboardBloc>()
-                          .add(SearchProductEvent(query));
-                    },
-                    decoration: const InputDecoration(
-                      hintText: "Search vegetables..",
-                      border: InputBorder.none,
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search',
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.grey.shade200,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Categories
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: categories.map((category) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Chip(
-                          label: Text(category),
-                          backgroundColor: category == "All"
-                              ? Colors.green
-                              : Colors.grey[200],
-                          labelStyle: TextStyle(
-                            color:
-                                category == "All" ? Colors.white : Colors.black,
-                          ),
-                          // onPressed: () {
-                          // context.read<DashboardBloc>().add(SelectCategoryEvent(category));
-                          // },
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Product Section
-                const Text("Our Products",
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 20),
+
+                // Categories Section
+                _buildSectionHeader("Categories"),
                 const SizedBox(height: 10),
-                BlocBuilder<DashboardBloc, DashboardState>(
-                  builder: (context, state) {
-                    if (state is ProductsLoadingState) {
-                      return const Center(child: CircularProgressIndicator());
-                    } else if (state is ProductsLoadedState) {
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: state.products.map((product) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: ProductCard(
-                                name: product["name"]!,
-                                price: product["price"]!,
-                                image: product["image"]!, // Show Product Image
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      );
-                    } else if (state is ProductsErrorState) {
-                      return Center(child: Text(state.message));
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
+                _buildCategoriesList(),
+                const SizedBox(height: 20),
+
+                // Top Selling Products Section
+                _buildSectionHeader("Top Selling"),
+                const SizedBox(height: 10),
+                _buildProductSection(),
+
+                const SizedBox(height: 20),
+
+                // New Arrivals Section
+                _buildSectionHeader("New In", isPurple: true),
+                const SizedBox(height: 10),
+                _buildProductSection(),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, {bool isPurple = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: isPurple ? Colors.purple : Colors.black,
+          ),
+        ),
+        const Text("See All", style: TextStyle(color: Colors.purple)),
+      ],
+    );
+  }
+
+  Widget _buildCategoriesList() {
+    return BlocBuilder<DashboardBloc, DashboardState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state.error != null) {
+          return Center(child: Text(state.error!));
+        } else if (state.products.isEmpty) {
+          return const Center(child: Text("No categories available"));
+        }
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: state.products.map((category) {
+              return Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    Text(
+                      category.product_categoryId.categoryName,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProductSection() {
+    return BlocBuilder<DashboardBloc, DashboardState>(
+      builder: (context, state) {
+        if (state.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state.error != null) {
+          return Center(child: Text(state.error!));
+        } else if (state.products.isEmpty) {
+          return const Center(child: Text("No products available"));
+        }
+        return _buildProductList(context, state.products);
+      },
+    );
+  }
+
+  Widget _buildProductList(BuildContext context, List<ProductEntity> products) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: products.map((product) {
+          print("Product Image URL: ${product.image}"); // ✅ Debugging output
+
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProductDetailsPage(product: product),
+                ),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: SizedBox(
+                width: 150,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        'http://10.0.2.2:3000/product_type_images/${product.image}', // ✅ Corrected string interpolation
+                        height: 120,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'assets/images/placeholder.png', // ✅ Local fallback image
+                            height: 120,
+                            fit: BoxFit.cover, // Ensure consistent sizing
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      product.name,
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.w600),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis, // Prevents overflow
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "\$${product.price}",
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
