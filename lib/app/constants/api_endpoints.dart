@@ -8,7 +8,12 @@ class ApiEndpoints {
   // ====================== Auth Routes ======================
   static const String login = "users/login";
   static const String register = "users/register";
+  static const String updateUser = "users/updateStudent/";
+  static const String getMe = "users/updateStudent/";
 
   static const String imageUrl = "http://10.0.2.2:3000/uploads/";
   static const String uploadImage = "/users/uploadImage";
+  // ====================== Product Routes ======================
+  static const String getAllProduct = "product/getAllProduct";
+  static const String getAllCategory = "category/";
 }
