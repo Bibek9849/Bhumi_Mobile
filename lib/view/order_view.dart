@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 class OrderView extends StatefulWidget {
@@ -11,13 +12,13 @@ class _OrderViewState extends State<OrderView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Map<String, dynamic>> orders = [
+  List<Map<String, dynamic>> orders = [
     {
-      "image": "https://m.media-amazon.com/images/I/71oywN1H24L._SL1500_.jpg",
+      "image": "assets/images/profile.png",
       "name": "Doms Modelling Clay 8 Shade, Car Shape, Non-Toxic, 8786",
       "price": "Rs. 110",
       "quantity": "x 1",
-      "status": "Processing"
+      "status": "Completed"
     },
     {
       "image": "https://m.media-amazon.com/images/I/51HFC3usvcL._SL1000_.jpg",
@@ -25,14 +26,14 @@ class _OrderViewState extends State<OrderView>
           "Transparent Sticky Notes With Free Pentonic Ball Pen (7.5x7.5cm, 50 Sheets)",
       "price": "Rs. 109",
       "quantity": "x 1",
-      "status": "Processing"
+      "status": "Completed"
     },
     {
       "image": "https://m.media-amazon.com/images/I/81k9j-sgMfL._SL1500_.jpg",
       "name": "ProArt Round Stretched Canvas 12'' - Professional Quality",
       "price": "Rs. 385",
       "quantity": "x 1",
-      "status": "Processing"
+      "status": "Completed"
     }
   ];
 
@@ -46,11 +47,6 @@ class _OrderViewState extends State<OrderView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("My Orders",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
         bottom: TabBar(
           controller: _tabController,
           labelColor: Colors.orange,
@@ -80,12 +76,12 @@ class _OrderViewState extends State<OrderView>
     return ListView.builder(
       itemCount: orders.length,
       itemBuilder: (context, index) {
-        return _buildOrderItem(orders[index]);
+        return _buildOrderItem(orders[index], index);
       },
     );
   }
 
-  Widget _buildOrderItem(Map<String, dynamic> order) {
+  Widget _buildOrderItem(Map<String, dynamic> order, int index) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Padding(
@@ -93,8 +89,19 @@ class _OrderViewState extends State<OrderView>
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(order["image"],
-                width: 60, height: 60, fit: BoxFit.cover),
+            CachedNetworkImage(
+              imageUrl: order["image"],
+              width: 60,
+              height: 60,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => Image.asset(
+                'assets/images/placeholder.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -117,16 +124,33 @@ class _OrderViewState extends State<OrderView>
               ),
             ),
             const SizedBox(width: 10),
-            Text(
-              order["status"],
-              style: const TextStyle(
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  order["status"],
+                  style: const TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    _deleteOrder(index);
+                  },
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  void _deleteOrder(int index) {
+    setState(() {
+      orders.removeAt(index);
+    });
   }
 }

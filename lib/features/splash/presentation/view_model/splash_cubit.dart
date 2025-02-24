@@ -12,7 +12,7 @@ class SplashCubit extends Cubit<void> {
       if (context.mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => OnboardingView()),
+          MaterialPageRoute(builder: (context) => const OnboardingView()),
         );
       }
     });
