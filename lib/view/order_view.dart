@@ -16,24 +16,30 @@ class _OrderViewState extends State<OrderView>
     {
       "image": "assets/images/profile.png",
       "name": "Doms Modelling Clay 8 Shade, Car Shape, Non-Toxic, 8786",
-      "price": "Rs. 110",
-      "quantity": "x 1",
-      "status": "Completed"
+      "price": 110,
+      "quantity": 1,
+      "status": "Completed",
+      "orderId": "#BH12345",
+      "date": "2024-02-20"
     },
     {
       "image": "https://m.media-amazon.com/images/I/51HFC3usvcL._SL1000_.jpg",
       "name":
           "Transparent Sticky Notes With Free Pentonic Ball Pen (7.5x7.5cm, 50 Sheets)",
-      "price": "Rs. 109",
-      "quantity": "x 1",
-      "status": "Completed"
+      "price": 109,
+      "quantity": 2,
+      "status": "To Ship",
+      "orderId": "#BH67890",
+      "date": "2024-02-18"
     },
     {
       "image": "https://m.media-amazon.com/images/I/81k9j-sgMfL._SL1500_.jpg",
       "name": "ProArt Round Stretched Canvas 12'' - Professional Quality",
-      "price": "Rs. 385",
-      "quantity": "x 1",
-      "status": "Completed"
+      "price": 385,
+      "quantity": 1,
+      "status": "To Receive",
+      "orderId": "#BH45678",
+      "date": "2024-02-15"
     }
   ];
 
@@ -47,11 +53,16 @@ class _OrderViewState extends State<OrderView>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text("My Orders"),
+        backgroundColor: const Color.fromARGB(255, 234, 237, 234),
+        elevation: 5,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: Colors.orange,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.orange,
+          indicatorColor: Colors.white,
+          indicatorWeight: 4, // Make indicator thicker
+          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
           tabs: const [
             Tab(text: "All"),
             Tab(text: "To Pay"),
@@ -63,86 +74,123 @@ class _OrderViewState extends State<OrderView>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildOrderList(), // All Orders
-          _buildOrderList(), // To Pay
-          _buildOrderList(), // To Ship
-          _buildOrderList(), // To Receive
+          _buildOrderList("All"),
+          _buildOrderList("To Pay"),
+          _buildOrderList("To Ship"),
+          _buildOrderList("To Receive"),
         ],
       ),
     );
   }
 
-  Widget _buildOrderList() {
+  Widget _buildOrderList(String filterStatus) {
+    List<Map<String, dynamic>> filteredOrders = filterStatus == "All"
+        ? orders
+        : orders.where((order) => order["status"] == filterStatus).toList();
+
+    if (filteredOrders.isEmpty) {
+      return const Center(
+        child: Text(
+          "No Orders Found",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
+
     return ListView.builder(
-      itemCount: orders.length,
+      itemCount: filteredOrders.length,
       itemBuilder: (context, index) {
-        return _buildOrderItem(orders[index], index);
+        return _buildOrderItem(filteredOrders[index], index);
       },
     );
   }
 
   Widget _buildOrderItem(Map<String, dynamic> order, int index) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CachedNetworkImage(
-              imageUrl: order["image"],
-              width: 60,
-              height: 60,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => Image.asset(
-                'assets/images/placeholder.png',
-                width: 60,
-                height: 60,
+    return GestureDetector(
+      onTap: () {
+        _showOrderDetails(order);
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 2, // Soft shadow for premium look
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CachedNetworkImage(
+                imageUrl: order["image"],
+                width: 70,
+                height: 70,
                 fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(
+                  Icons.image_not_supported,
+                  size: 70,
+                  color: Colors.grey,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    order["name"],
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 14),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 5),
-                  Text(order["price"],
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      order["name"],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "Rs. ${order["price"]}  |  Qty: ${order["quantity"]}",
                       style:
-                          const TextStyle(color: Colors.black, fontSize: 14)),
-                  Text(order["quantity"],
-                      style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          const TextStyle(color: Colors.black87, fontSize: 14),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      order["orderId"],
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    Text(
+                      "Ordered on: ${order["date"]}",
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(order["status"]),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      order["status"],
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.red.withOpacity(0.1),
+                    ),
+                    onPressed: () => _deleteOrder(index),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  order["status"],
-                  style: const TextStyle(
-                      color: Colors.orange,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () {
-                    _deleteOrder(index);
-                  },
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -152,5 +200,57 @@ class _OrderViewState extends State<OrderView>
     setState(() {
       orders.removeAt(index);
     });
+  }
+
+  void _showOrderDetails(Map<String, dynamic> order) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Order Details - ${order["orderId"]}"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CachedNetworkImage(
+                imageUrl: order["image"],
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+              const SizedBox(height: 10),
+              Text(order["name"],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 5),
+              Text("Price: Rs. ${order["price"]}"),
+              Text("Quantity: ${order["quantity"]}"),
+              Text("Status: ${order["status"]}"),
+              Text("Order Date: ${order["date"]}"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case "To Pay":
+        return Colors.red;
+      case "To Ship":
+        return Colors.orange;
+      case "To Receive":
+        return Colors.blue;
+      case "Completed":
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
   }
 }

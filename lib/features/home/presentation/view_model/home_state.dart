@@ -24,7 +24,7 @@ class HomeState extends Equatable {
       views: [
         BlocProvider(
           create: (context) => getIt<DashboardBloc>(),
-          child: DashboardView(),
+          child: const DashboardView(),
         ),
         BlocProvider(
           create: (context) => getIt<DashboardBloc>(),
