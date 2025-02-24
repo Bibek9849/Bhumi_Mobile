@@ -13,9 +13,8 @@ class AuthRemoteDataSource implements IAuthDataSource {
   @override
   Future<void> registerStudent(AuthEntity student) async {
     try {
-      Response response = await _dio.post(
-        ApiEndpoints.register,
-        data: {
+      Response response = await _dio.post(ApiEndpoints.register, data: {
+        "data": {
           "fullName": student.fullName,
           "email": student.email,
           "image": student.image,
@@ -23,7 +22,7 @@ class AuthRemoteDataSource implements IAuthDataSource {
           "address": student.address,
           "password": student.password,
         },
-      );
+      });
 
       if (response.statusCode == 200) {
         return;
@@ -49,8 +48,10 @@ class AuthRemoteDataSource implements IAuthDataSource {
       Response response = await _dio.post(
         ApiEndpoints.login,
         data: {
-          "contact": contact,
-          "password": password,
+          "data": {
+            "contact": contact,
+            "password": password,
+          }
         },
       );
 
