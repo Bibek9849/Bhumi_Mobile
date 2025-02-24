@@ -1,15 +1,15 @@
 part of 'dashboard_bloc.dart';
 
-abstract class DashboardEvent {}
+@immutable
+sealed class DashboardEvent extends Equatable {
+  const DashboardEvent();
 
-class LoadProductsEvent extends DashboardEvent {}
-
-class SearchProductEvent extends DashboardEvent {
-  final String query;
-  SearchProductEvent(this.query);
+  @override
+  List<Object> get props => [];
 }
 
-class SelectCategoryEvent extends DashboardEvent {
-  final String category;
-  SelectCategoryEvent(this.category);
-}
+final class LoadProducts extends DashboardEvent {}
+
+final class AddProduct extends DashboardEvent {}
+
+final class DeleteProduct extends DashboardEvent {}
