@@ -1,10 +1,8 @@
-import 'package:bhumi_mobile/core/common/snackbar/my_snackbar.dart';
 import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
 import 'package:bhumi_mobile/features/home/presentation/view_model/home_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
@@ -41,17 +39,17 @@ class HomeView extends StatelessWidget {
               // Future Notification Action
             },
           ),
-          IconButton(
-            icon: const Icon(LucideIcons.logOut, color: Colors.white),
-            onPressed: () {
-              showMySnackBar(
-                context: context,
-                message: 'Logging out...',
-                color: Colors.red,
-              );
-              context.read<HomeCubit>().logout(context);
-            },
-          ),
+          // IconButton(
+          //   icon: const Icon(LucideIcons.logOut, color: Colors.white),
+          //   onPressed: () {
+          //     showMySnackBar(
+          //       context: context,
+          //       message: 'Logging out...',
+          //       color: Colors.red,
+          //     );
+          //     context.read<HomeCubit>().logout(context);
+          //   },
+          // ),
         ],
       ),
 

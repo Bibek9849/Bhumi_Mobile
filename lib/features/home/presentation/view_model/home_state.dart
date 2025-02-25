@@ -10,17 +10,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeState extends Equatable {
   final int selectedIndex;
+  final String? token;
   final List<Widget> views;
 
   const HomeState({
     required this.selectedIndex,
     required this.views,
+    this.token,
   });
 
   // Initial state
   static HomeState initial() {
     return HomeState(
       selectedIndex: 0,
+      token: null, // Ensure token is initialized
       views: [
         BlocProvider(
           create: (context) => getIt<DashboardBloc>(),
@@ -31,8 +34,9 @@ class HomeState extends Equatable {
           child: const OrderView(),
         ),
         BlocProvider(
-            create: (context) => getIt<ProfileBloc>(),
-            child: const ProfileView()),
+          create: (context) => getIt<ProfileBloc>(),
+          child: const ProfileView(),
+        ),
       ],
     );
   }
@@ -40,13 +44,15 @@ class HomeState extends Equatable {
   HomeState copyWith({
     int? selectedIndex,
     List<Widget>? views,
+    String? token, // <-- Added to update token
   }) {
     return HomeState(
       selectedIndex: selectedIndex ?? this.selectedIndex,
       views: views ?? this.views,
+      token: token ?? this.token, // <-- Ensure token is copied
     );
   }
 
   @override
-  List<Object?> get props => [selectedIndex, views];
+  List<Object?> get props => [selectedIndex, views, token]; // <-- Added token
 }

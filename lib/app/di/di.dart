@@ -123,13 +123,14 @@ _initLoginDependencies() async {
       signupBloc: getIt<SignupBloc>(),
       homeCubit: getIt<HomeCubit>(),
       loginUseCase: getIt<LoginUseCase>(),
+      tokenSharedPrefs: getIt<TokenSharedPrefs>(),
     ),
   );
 }
 
 _initHomeDependencies() async {
   getIt.registerFactory<HomeCubit>(
-    () => HomeCubit(),
+    () => HomeCubit(getIt<TokenSharedPrefs>()),
   );
 }
 
@@ -158,6 +159,7 @@ _initDashboardDependencies() async {
   getIt.registerFactory<DashboardBloc>(
     () => DashboardBloc(
       getAllProductUseCase: getIt<GetAllProductUseCase>(),
+      tokenSharedPrefs: getIt<TokenSharedPrefs>(),
     ),
   );
 }

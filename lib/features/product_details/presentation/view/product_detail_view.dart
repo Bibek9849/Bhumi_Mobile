@@ -43,7 +43,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           children: [
             Center(
               child: Image.network(
-                'http://10.0.2.2:3000/product_type_images/${widget.product.image}',
+                'http://192.168.1.68:3000/product_type_images/${widget.product.image}',
+                // 'http://10.0.2.2:3000/product_type_images/${widget.product.image}',
                 height: 200,
                 fit: BoxFit.cover,
               ),
@@ -55,7 +56,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 4.0),
                   child: Image.network(
-                    'http://10.0.2.2:3000/product_type_images/${widget.product.image}',
+                    'http://192.168.1.68:3000/product_type_images/${widget.product.image}',
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,
