@@ -1,5 +1,6 @@
+import 'package:bhumi_mobile/features/profile/presentation/view/change_password.dart';
+import 'package:bhumi_mobile/features/profile/presentation/view/edit_profile.dart';
 import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/profile_bloc.dart';
-import 'package:bhumi_mobile/view/profile_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,104 +10,189 @@ class ProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: BlocProvider(
-        create: (context) => ProfileBloc(),
-        child: BlocConsumer<ProfileBloc, ProfileState>(
-          listener: (context, state) {
-            if (state is ProfileError) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ));
-            }
-          },
-          builder: (context, state) {
-            if (state is ProfileLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (state is ProfileError) {
-              return Center(
-                  child: Text(state.message,
-                      style: const TextStyle(color: Colors.red)));
-            }
-            if (state is ProfileLoaded) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Profile Info with Edit Icon
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
                   children: [
                     CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.grey,
-                      backgroundImage: NetworkImage(state.profileImage),
-                      child: const Icon(Icons.person,
-                          size: 50, color: Colors.white),
+                      radius: 40,
+                      backgroundImage: NetworkImage(
+                          'https://i.pravatar.cc/150?img=3'), // Placeholder image
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      state.username,
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 20),
-                    _buildProfileButton(context, Icons.person, "Edit Profile",
-                        event: EditProfileEvent(),
-                        navigateTo: const EditProfileView()),
-                    const SizedBox(height: 10),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        context.read<ProfileBloc>().add(LogoutEvent());
-                      },
-                      icon: const Icon(Icons.logout),
-                      label: const Text("Logout"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Bibek Pandey",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                      ),
+                        Text(
+                          "9849943368",
+                          style: TextStyle(fontSize: 14, color: Colors.grey),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              );
-            }
-            return const Center(child: Text("Welcome"));
-          },
-        ),
-      ),
-    );
-  }
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const EditProfileScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
 
-  Widget _buildProfileButton(BuildContext context, IconData icon, String title,
-      {ProfileEvent? event, Widget? navigateTo}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          if (navigateTo != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => navigateTo),
-            );
-          } else if (event != null) {
-            context.read<ProfileBloc>().add(event);
-          }
-        },
-        icon: Icon(icon, color: Colors.white),
-        label: Text(title, style: const TextStyle(fontSize: 16)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blueAccent,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+            // Settings Sections
+            Expanded(
+              child: ListView(
+                children: [
+                  const SectionTitle(title: "General"),
+                  SettingsItem(
+                      icon: Icons.event_note,
+                      title: "Change Password",
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const ChangePassword()),
+                        );
+                      }),
+                  const SectionTitle(title: "Account Setting"),
+                  const DarkModeToggle(),
+                  SettingsItem(
+                    icon: Icons.logout,
+                    title: "Logout",
+                    isLogout: true,
+                    onPressed: () {
+                      showMySnackBar(
+                        context: context,
+                        message: 'Logging out...',
+                        color: Colors.red,
+                      );
+                      context.read<ProfileBloc>().logout(context);
+                    },
+                  ),
+                  const SectionTitle(title: "App Setting"),
+                  const SettingsItem(icon: Icons.language, title: "Language"),
+                  const SettingsItem(icon: Icons.security, title: "Security"),
+                  const SectionTitle(title: "Support"),
+                  const SettingsItem(
+                      icon: Icons.help_outline, title: "Help Center"),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
+
+// Section Title Widget
+class SectionTitle extends StatelessWidget {
+  final String title;
+  const SectionTitle({super.key, required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Text(
+        title,
+        style: const TextStyle(
+            fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
+      ),
+    );
+  }
+}
+
+// Settings Item Widget
+class SettingsItem extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool isLogout;
+  final VoidCallback? onPressed;
+
+  const SettingsItem({
+    super.key,
+    required this.icon,
+    required this.title,
+    this.isLogout = false,
+    this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: isLogout ? Colors.red : Colors.black),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: isLogout ? Colors.red : Colors.black,
+        ),
+      ),
+      trailing:
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+      onTap: onPressed, // Calls function when tapped
+    );
+  }
+}
+
+// Dark Mode Toggle Widget
+class DarkModeToggle extends StatefulWidget {
+  const DarkModeToggle({super.key});
+
+  @override
+  _DarkModeToggleState createState() => _DarkModeToggleState();
+}
+
+class _DarkModeToggleState extends State<DarkModeToggle> {
+  bool isDarkMode = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.dark_mode),
+      title: const Text("Dark Mode",
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+      trailing: Switch(
+        value: isDarkMode,
+        onChanged: (bool value) {
+          setState(() {
+            isDarkMode = value;
+          });
+        },
+      ),
+    );
+  }
+}
+
+// Snackbar Function
+void showMySnackBar(
+    {required BuildContext context,
+    required String message,
+    required Color color}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message, style: const TextStyle(color: Colors.white)),
+      backgroundColor: color,
+      duration: const Duration(seconds: 2),
+    ),
+  );
 }
