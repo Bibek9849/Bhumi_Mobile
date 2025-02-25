@@ -1,5 +1,7 @@
 import 'package:bhumi_mobile/features/dashboard/domain/entity/product_entity.dart';
 import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
+import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
+import 'package:bhumi_mobile/features/home/presentation/view_model/home_state.dart';
 import 'package:bhumi_mobile/features/product_details/presentation/view/product_detail_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,8 +24,25 @@ class DashboardView extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const CircleAvatar(
-                      backgroundImage: AssetImage("assets/images/profile.png"),
+                    BlocBuilder<HomeCubit, HomeState>(
+                      builder: (context, state) {
+                        return const Row(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage:
+                                  AssetImage("assets/images/profile.png"),
+                            ),
+                            SizedBox(width: 10), // Add spacing
+                            Text(
+                              "Hi, ${"Bibek Pandey"}",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     CircleAvatar(
                       backgroundColor: Colors.purple.shade100,
@@ -167,7 +186,8 @@ class DashboardView extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
-                        'http://10.0.2.2:3000/product_type_images/${product.image}', // ✅ Corrected string interpolation
+                        'http://192.168.1.68:3000/product_type_images/${product.image}', // ✅ Corrected string interpolation
+                        // 'http://10.0.2.2:3000/product_type_images/${product.image}',
                         height: 120,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
@@ -189,7 +209,7 @@ class DashboardView extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      "\$${product.price}",
+                      "Rs ${product.price}/ K.G",
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
