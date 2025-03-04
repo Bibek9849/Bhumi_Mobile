@@ -17,39 +17,36 @@ class HomeView extends StatelessWidget {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
-        title: const Text(
-          'Bhumi',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        leading: Container(), // This hides the back button
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset(
+              'assets/images/logo.png', // Add your logo path
+              height: 30,
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Bhumi',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
         ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white),
-            onPressed: () {
-              // Future Search Action
-            },
+            onPressed: () {},
           ),
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.white),
-            onPressed: () {
-              // Future Notification Action
-            },
+            onPressed: () {},
           ),
-          // IconButton(
-          //   icon: const Icon(LucideIcons.logOut, color: Colors.white),
-          //   onPressed: () {
-          //     showMySnackBar(
-          //       context: context,
-          //       message: 'Logging out...',
-          //       color: Colors.red,
-          //     );
-          //     context.read<HomeCubit>().logout(context);
-          //   },
-          // ),
         ],
       ),
 

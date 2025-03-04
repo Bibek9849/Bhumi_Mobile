@@ -4,6 +4,7 @@ import 'package:bhumi_mobile/core/error/failure.dart';
 import 'package:bhumi_mobile/features/auth/domain/repository/auth_repository.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class LoginParams extends Equatable {
   final String contact;
@@ -31,22 +32,28 @@ class LoginUseCase implements UsecaseWithParams<String, LoginParams> {
 
   @override
   Future<Either<Failure, String>> call(LoginParams params) async {
-    // Check for empty contact or password and return a failure immediately
-    if (params.contact.isEmpty || params.password.isEmpty) {
-      return const Left(
-          ApiFailure(message: 'Contact or password cannot be empty'));
-    }
-
-    // Proceed with the login if inputs are valid
     final result =
         await repository.loginStudent(params.contact, params.password);
-
     return result.fold(
-      (failure) => Left(failure), // If login fails, return the failure
-      (token) {
-        tokenSharedPrefs
-            .saveToken(token); // Save the token if login is successful
-        return Right(token); // Return the token if successful
+      (failure) => Left(failure),
+      (token) async {
+        await tokenSharedPrefs.saveToken(token); // ✅ Save Token
+
+        // ✅ Decode JWT Token to Extract User Data
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        String? userId = decodedToken['id'];
+        String? fullName = decodedToken['fullName'];
+        String? contact = decodedToken['contact'];
+        String? profileImage = decodedToken['profileImage'];
+
+        // ✅ Save User Data in Shared Preferences
+        if (userId != null) await tokenSharedPrefs.saveUserId(userId);
+        if (fullName != null) await tokenSharedPrefs.saveUserFullName(fullName);
+        if (contact != null) await tokenSharedPrefs.saveUserContact(contact);
+        if (profileImage != null)
+          await tokenSharedPrefs.saveUserImage(profileImage);
+
+        return Right(token);
       },
     );
   }

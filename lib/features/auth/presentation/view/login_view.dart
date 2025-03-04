@@ -55,7 +55,7 @@ class _LoginViewState extends State<LoginView> {
                           SizedBox(
                             height: 200,
                             child: Image.asset(
-                              'assets/images/l.png',
+                              'assets/images/home.png',
                               fit: BoxFit.contain,
                             ),
                           ),
