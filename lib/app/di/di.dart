@@ -1,6 +1,7 @@
 import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
 import 'package:bhumi_mobile/core/network/api_service.dart';
 import 'package:bhumi_mobile/core/network/hive_service.dart';
+import 'package:bhumi_mobile/core/theme/theme_cubit.dart';
 import 'package:bhumi_mobile/features/auth/data/data_source/local_data_source/auth_local_data_source.dart';
 import 'package:bhumi_mobile/features/auth/data/data_source/remote_data_source/auth_remote_datasource.dart';
 import 'package:bhumi_mobile/features/auth/data/repository/auth_local_repository.dart';
@@ -17,7 +18,12 @@ import 'package:bhumi_mobile/features/dashboard/domain/use_case/get_all_product_
 import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
 import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
 import 'package:bhumi_mobile/features/onboarding/presentation/view_model/onboarding_cubit.dart';
-import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/profile_bloc.dart';
+import 'package:bhumi_mobile/features/profile/data/data_source/student_remote_data_source.dart/student_remote_data_source.dart';
+import 'package:bhumi_mobile/features/profile/data/repository/student_remote_repository.dart';
+import 'package:bhumi_mobile/features/profile/domain/repository/student_repository.dart';
+import 'package:bhumi_mobile/features/profile/domain/use_case/get_student_profile_usecase.dart';
+import 'package:bhumi_mobile/features/profile/domain/use_case/update_student_profile_usecase.dart';
+import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/student_profile_bloc.dart';
 import 'package:bhumi_mobile/features/splash/presentation/view_model/splash_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
@@ -36,13 +42,18 @@ Future<void> initDependencies() async {
   await _initLoginDependencies();
   await _initHomeDependencies();
   await _initDashboardDependencies();
-  await _initProfileDependencies();
+  _initProfileDependencies();
   await _initCategoryDependencies();
+  await _initThemeDependencies();
 }
 
 Future<void> _initSharedPreferences() async {
   final sharedPreferences = await SharedPreferences.getInstance();
   getIt.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
+}
+
+Future<void> _initThemeDependencies() async {
+  getIt.registerLazySingleton<ThemeCubit>(() => ThemeCubit());
 }
 
 _initApiService() {
@@ -164,10 +175,33 @@ _initDashboardDependencies() async {
   );
 }
 
-_initProfileDependencies() async {
-  getIt.registerFactory<ProfileBloc>(
-    () => ProfileBloc(),
-  );
+// _initProfileDependencies() async {
+//   getIt.registerFactory<StudentProfileBloc>(
+//     () => StudentProfileBloc(),
+//   );
+// }
+void _initProfileDependencies() {
+  // ✅ Register Remote Data Source
+  getIt.registerLazySingleton<StudentRemoteDataSource>(() =>
+      StudentRemoteDataSource(
+          dio: getIt<Dio>(), tokenSharedPrefs: getIt<TokenSharedPrefs>()));
+
+  // ✅ Register Repository
+  getIt.registerLazySingleton<IStudentRepository>(
+      () => StudentRemoteRepository(getIt<StudentRemoteDataSource>()));
+
+  // ✅ Register Use Case
+  getIt.registerLazySingleton<GetStudentProfileUsecase>(
+      () => GetStudentProfileUsecase(repository: getIt<IStudentRepository>()));
+
+  getIt.registerLazySingleton<UpdateStudentProfileUsecase>(() =>
+      UpdateStudentProfileUsecase(
+          studentRepository: getIt<IStudentRepository>()));
+
+  getIt.registerFactory(() => StudentProfileBloc(
+        getStudentProfileUsecase: getIt<GetStudentProfileUsecase>(),
+        updateStudentProfileUsecase: getIt<UpdateStudentProfileUsecase>(),
+      ));
 }
 
 _initCategoryDependencies() async {

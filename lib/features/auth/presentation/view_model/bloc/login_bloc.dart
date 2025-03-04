@@ -7,6 +7,7 @@ import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.da
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -68,41 +69,50 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           ),
         );
 
-        if (result.isLeft()) {
-          emit(state.copyWith(isLoading: false, isSuccess: false));
-          showMySnackBar(
-            context: event.context,
-            message: "Invalid Credentials",
-            color: Colors.red,
-          );
-          return; // Exit early if login fails
-        }
+        result.fold(
+          (failure) {
+            emit(state.copyWith(isLoading: false, isSuccess: false));
+            showMySnackBar(
+              context: event.context,
+              message: "Invalid Credentials",
+              color: Colors.red,
+            );
+          },
+          (token) async {
+            emit(state.copyWith(isLoading: false, isSuccess: true));
 
-        final token = result.getOrElse(() => "");
+            // Save Token
+            await _tokenSharedPrefs.saveToken(token);
 
-        // Save token before emitting success state
-        final saveResult = await _tokenSharedPrefs.saveToken(token);
+            // Decode Token to Extract User ID
+            Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+            String? userId = decodedToken['id'];
 
-        if (saveResult.isLeft()) {
-          showMySnackBar(
-            context: event.context,
-            message: "Failed to save token",
-            color: Colors.red,
-          );
-          emit(state.copyWith(isLoading: false, isSuccess: false));
-          return; // Exit if saving fails
-        }
+            if (userId != null) {
+              await _tokenSharedPrefs.saveUserId(userId);
+            }
 
-        // Ensure all operations complete before emitting the final state
-        await _homeCubit.setToken(token);
+            // Retrieve and Print Token and User ID
+            final storedToken = await _tokenSharedPrefs.getToken();
+            final storedUserId = await _tokenSharedPrefs.getUserId();
 
-        emit(state.copyWith(isLoading: false, isSuccess: true));
+            print("====== LOGIN SUCCESS ======");
+            print("Token: ${storedToken.getOrElse(() => 'No Token Saved')}");
+            print(
+                "User ID: ${storedUserId.getOrElse(() => 'No User ID Saved')}");
+            print("===========================");
 
-        add(
-          NavigateHomeScreenEvent(
-            context: event.context,
-            destination: const HomeView(),
-          ),
+            showMySnackBar(
+              context: event.context,
+              message: "Login Successful",
+              color: Colors.green,
+            );
+
+            add(NavigateHomeScreenEvent(
+              context: event.context,
+              destination: const HomeView(),
+            ));
+          },
         );
       },
     );

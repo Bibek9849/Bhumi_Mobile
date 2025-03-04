@@ -1,5 +1,6 @@
 import 'package:bhumi_mobile/app/di/di.dart';
 import 'package:bhumi_mobile/core/theme/app_theme.dart';
+import 'package:bhumi_mobile/core/theme/theme_cubit.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
 import 'package:bhumi_mobile/features/splash/presentation/view/splash_view.dart';
@@ -14,22 +15,22 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<SplashCubit>(
-          create: (_) => getIt<SplashCubit>(),
-        ),
-        // Add other blocs here as needed
-        BlocProvider<SignupBloc>(
-          create: (_) => getIt<SignupBloc>(),
-        ),
-        BlocProvider<LoginBloc>(
-          create: (_) => getIt<LoginBloc>(),
-        ),
+        BlocProvider(create: (_) => ThemeCubit()), // ✅ Add ThemeCubit here
+        BlocProvider<SplashCubit>(create: (_) => getIt<SplashCubit>()),
+        BlocProvider<SignupBloc>(create: (_) => getIt<SignupBloc>()),
+        BlocProvider<LoginBloc>(create: (_) => getIt<LoginBloc>()),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Bhumi',
-        theme: AppTheme.getApplicationTheme(isDarkMode: false),
-        home: const SplashView(),
+      child: BlocBuilder<ThemeCubit, bool>(
+        builder: (context, isDarkMode) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: 'Bhumi',
+            theme: AppThemes.getLightTheme(),
+            darkTheme: AppThemes.getDarkTheme(),
+            themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            home: const SplashView(),
+          );
+        },
       ),
     );
   }

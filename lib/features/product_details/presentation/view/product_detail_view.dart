@@ -1,10 +1,20 @@
+import 'dart:convert';
+
+import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
 import 'package:bhumi_mobile/features/dashboard/domain/entity/product_entity.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final ProductEntity product;
+  final TokenSharedPrefs tokenSharedPrefs; // Inject TokenSharedPrefs
 
-  const ProductDetailsPage({super.key, required this.product});
+  const ProductDetailsPage({
+    super.key,
+    required this.product,
+    required this.tokenSharedPrefs,
+  });
 
   @override
   _ProductDetailsPageState createState() => _ProductDetailsPageState();
@@ -16,25 +26,79 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   double get totalPrice =>
       (double.tryParse(widget.product.price.toString()) ?? 0) * quantity;
 
+  Future<void> placeOrder() async {
+    final orderDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    // Fetch user ID from SharedPreferences
+    final userIdResult = await widget.tokenSharedPrefs.getUserId();
+
+    // Handle possible error when fetching user ID
+    String userId = "";
+    userIdResult.fold(
+      (failure) {
+        print("Error fetching user ID: ${failure.message}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error fetching user ID: ${failure.message}')),
+        );
+      },
+      (id) {
+        userId = id;
+      },
+    );
+
+    if (userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID is missing. Please log in.')),
+      );
+      return;
+    }
+
+    final orderData = {
+      "cart": [
+        {
+          "_id": widget.product.productId,
+          "quantity": quantity,
+          "price": totalPrice
+        }
+      ],
+      "userId": userId,
+      "orderDate": orderDate,
+      "totalPrice": totalPrice,
+      "totalQuantity": quantity
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/api/order/save'), // Ensure correct URL
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(orderData),
+      );
+
+      print("Response Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Order placed successfully!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to place order: ${response.body}')),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.product.product_categoryId.categoryName),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border, color: Colors.green),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -43,26 +107,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           children: [
             Center(
               child: Image.network(
-                'http://192.168.1.68:3000/product_type_images/${widget.product.image}',
-                // 'http://10.0.2.2:3000/product_type_images/${widget.product.image}',
+                'http://10.0.2.2:3000/product_type_images/${widget.product.image}',
                 height: 200,
                 fit: BoxFit.cover,
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(4, (index) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                  child: Image.network(
-                    'http://192.168.1.68:3000/product_type_images/${widget.product.image}',
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
-                );
-              }),
             ),
             const SizedBox(height: 16),
             Row(
@@ -137,11 +185,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text("Apply Coupon",
-                        style: TextStyle(color: Colors.green)),
-                  ),
                   const Divider(),
                   const Text("Invoice",
                       style: TextStyle(fontWeight: FontWeight.bold)),
@@ -150,20 +193,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     children: [
                       const Text("Original Price"),
                       Text("Rs ${widget.product.price}"),
-                    ],
-                  ),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Delivery"),
-                      Text("+ Rs: 0", style: TextStyle(color: Colors.red)),
-                    ],
-                  ),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Discount"),
-                      Text("- Rs: 0", style: TextStyle(color: Colors.green)),
                     ],
                   ),
                   const Divider(),
@@ -187,7 +216,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                onPressed: () {},
+                onPressed: placeOrder, // Calls the order API
                 child: const Text(
                   "Proceed to Checkout",
                   style: TextStyle(fontSize: 18, color: Colors.white),
