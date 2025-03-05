@@ -23,6 +23,9 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
+    // For tablets, we often want a narrower column, say max 600 or 700 px.
+    const double maxContentWidth = 600;
+
     return FutureBuilder<SharedPreferences>(
       future: SharedPreferences.getInstance(),
       builder: (context, snapshot) {
@@ -42,12 +45,16 @@ class _LoginViewState extends State<LoginView> {
           child: Scaffold(
             backgroundColor: const Color(0xFFEAF4EA),
             body: SafeArea(
-              child: Form(
-                key: _formKey,
-                child: Center(
+              child: Center(
+                // Constrain the maximum width of the content
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: maxContentWidth,
+                  ),
                   child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -143,7 +150,7 @@ class _LoginViewState extends State<LoginView> {
 
                           // Login Button
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.8,
+                            width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {
                                 if (_formKey.currentState?.validate() ??
@@ -179,7 +186,7 @@ class _LoginViewState extends State<LoginView> {
 
                           // Google Sign-In Button
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.8,
+                            width: double.infinity,
                             child: OutlinedButton.icon(
                               onPressed: () {
                                 // Handle Google Sign-In
@@ -218,8 +225,9 @@ class _LoginViewState extends State<LoginView> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const RegisterView()),
+                                      builder: (context) =>
+                                          const RegisterView(),
+                                    ),
                                   );
                                 },
                                 child: const Text(
@@ -232,6 +240,7 @@ class _LoginViewState extends State<LoginView> {
                               ),
                             ],
                           ),
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
