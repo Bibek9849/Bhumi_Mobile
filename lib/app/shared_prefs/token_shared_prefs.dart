@@ -98,17 +98,15 @@ class TokenSharedPrefs {
   }
 
   // ✅ Get User Profile Image
-  // ✅ Get User Profile Image
   Future<Either<Failure, String>> getUserImage() async {
     try {
       final imageUrl = _sharedPreferences.getString('profileImage');
 
-      return Right((imageUrl != null &&
-                  imageUrl.isNotEmpty &&
-                  imageUrl.startsWith("http"))
-              ? imageUrl
-              : "https://i.pravatar.cc/150?img=3" // ✅ Default placeholder
-          );
+      return Right(
+        (imageUrl != null && imageUrl.isNotEmpty && imageUrl.startsWith("http"))
+            ? imageUrl
+            : "assets/images/profile.jpg",
+      );
     } catch (e) {
       return Left(SharedPrefsFailure(message: e.toString()));
     }

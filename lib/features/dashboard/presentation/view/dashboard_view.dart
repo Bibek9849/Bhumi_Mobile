@@ -43,69 +43,97 @@ class _DashboardViewState extends State<DashboardView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ✅ Header with full name
-                Text(
-                  "Hi, $fullName",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
+    // You can adjust this max width as needed
+    const double maxContentWidth = 600;
 
-                // Search Bar
-                TextField(
-                  onChanged: (query) {
-                    setState(() {
-                      searchQuery = query.toLowerCase();
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search by name (e.g., Wheat, Banana)',
-                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: Center(
+          // Constrain the width so the UI doesn’t stretch too wide on tablets
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: maxContentWidth),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // User Greeting
+                  Row(
+                    children: [
+                      const CircleAvatar(
+                        backgroundImage:
+                            AssetImage("assets/images/profile.jpg"),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        "Hi, $fullName",
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Search Bar
+                  TextField(
+                    onChanged: (query) {
+                      setState(() {
+                        searchQuery = query.toLowerCase();
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Search by name (e.g., Wheat, Banana)',
+                      prefixIcon:
+                          Icon(Icons.search, color: colorScheme.primary),
+                      filled: true,
+                      fillColor: colorScheme.surface,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
+                  const SizedBox(height: 20),
 
-                // Vouchers Section
-                _buildSectionHeader("Vouchers & Offers", isPurple: true,
-                    onTap: () {
-                  print("Vouchers clicked");
-                }),
-                const SizedBox(height: 10),
-                _buildVoucherList(),
-                const SizedBox(height: 20),
+                  // Vouchers Section
+                  _buildSectionHeader(
+                    "Vouchers & Offers",
+                    isPurple: true,
+                    onTap: () => print("Vouchers clicked"),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildVoucherList(colorScheme, textTheme),
+                  const SizedBox(height: 20),
 
-                // Top Selling Products Section
-                _buildSectionHeader("Top Selling", onTap: () {
-                  print("See All Top Selling");
-                }),
-                const SizedBox(height: 10),
-                _buildProductSection(),
-                const SizedBox(height: 20),
+                  // Top Selling Products Section
+                  _buildSectionHeader(
+                    "Top Selling",
+                    onTap: () => print("See All Top Selling"),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildProductSection(colorScheme, textTheme),
+                  const SizedBox(height: 20),
 
-                // New Arrivals Section
-                _buildSectionHeader("New In", isPurple: true, onTap: () {
-                  print("See All New In");
-                }),
-                const SizedBox(height: 10),
-                _buildProductSection(),
-              ],
+                  // New Arrivals Section
+                  _buildSectionHeader(
+                    "New In",
+                    isPurple: true,
+                    onTap: () => print("See All New In"),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildProductSection(colorScheme, textTheme),
+                ],
+              ),
             ),
           ),
         ),
@@ -123,64 +151,81 @@ class _DashboardViewState extends State<DashboardView> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: isPurple ? Colors.purple : Colors.black,
+            color: isPurple
+                ? Colors.purple
+                : Theme.of(context).colorScheme.onSurface,
           ),
         ),
         GestureDetector(
           onTap: onTap,
-          child: const Text("See All", style: TextStyle(color: Colors.purple)),
+          child: const Text(
+            "See All",
+            style: TextStyle(color: Colors.purple),
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildVoucherList() {
+  Widget _buildVoucherList(ColorScheme colorScheme, TextTheme textTheme) {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.purple.shade50,
+        color: Colors.purple.shade100,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             "Get 20% off on your first order!",
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple),
+            style: textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.purple,
+            ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Text(
             "Use code: WELCOME20",
-            style: TextStyle(fontSize: 14, color: Colors.black87),
+            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProductSection() {
+  Widget _buildProductSection(ColorScheme colorScheme, TextTheme textTheme) {
     return BlocBuilder<DashboardBloc, DashboardState>(
       builder: (context, state) {
         if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state.error != null) {
-          return Center(child: Text(state.error!));
+          return Center(
+            child: Text(state.error!, style: textTheme.bodyMedium),
+          );
         } else if (state.products.isEmpty) {
-          return const Center(child: Text("No products available"));
+          return Center(
+            child: Text("No products available", style: textTheme.bodyMedium),
+          );
         }
+
         final filteredProducts = state.products
             .where(
                 (product) => product.name.toLowerCase().contains(searchQuery))
             .toList();
-        return _buildProductList(context, filteredProducts);
+
+        return _buildProductList(
+            context, filteredProducts, colorScheme, textTheme);
       },
     );
   }
 
-  Widget _buildProductList(BuildContext context, List<ProductEntity> products) {
+  Widget _buildProductList(
+    BuildContext context,
+    List<ProductEntity> products,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -204,6 +249,7 @@ class _DashboardViewState extends State<DashboardView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Product Image
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
@@ -220,18 +266,24 @@ class _DashboardViewState extends State<DashboardView> {
                       ),
                     ),
                     const SizedBox(height: 5),
+                    // Product Name
                     Text(
                       product.name,
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.w600),
+                      style: textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 5),
+                    // Product Price
                     Text(
                       "Rs ${product.price}/ K.G",
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.primary,
+                      ),
                     ),
                   ],
                 ),

@@ -19,7 +19,7 @@ class _ProfileViewState extends State<ProfileView> {
   late TokenSharedPrefs tokenSharedPrefs;
   String fullName = "Loading...";
   String contactNumber = "Loading...";
-  String profileImage = ""; // ✅ Added missing profileImage variable
+  String profileImage = "";
 
   @override
   void initState() {
@@ -31,10 +31,9 @@ class _ProfileViewState extends State<ProfileView> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     tokenSharedPrefs = TokenSharedPrefs(prefs);
 
-    // ✅ Fetch Full Name
     final nameResult = await tokenSharedPrefs.getUserFullName();
     nameResult.fold(
-      (failure) => print("❌ Error fetching full name: ${failure.message}"),
+      (failure) => debugPrint("❌ Error fetching full name: ${failure.message}"),
       (name) {
         setState(() {
           fullName = name.isNotEmpty ? name : "User not found";
@@ -42,10 +41,9 @@ class _ProfileViewState extends State<ProfileView> {
       },
     );
 
-    // ✅ Fetch Contact Number
     final contactResult = await tokenSharedPrefs.getUserContact();
     contactResult.fold(
-      (failure) => print("❌ Error fetching contact: ${failure.message}"),
+      (failure) => debugPrint("❌ Error fetching contact: ${failure.message}"),
       (contact) {
         setState(() {
           contactNumber = contact.isNotEmpty ? contact : "Not Provided";
@@ -53,13 +51,13 @@ class _ProfileViewState extends State<ProfileView> {
       },
     );
 
-    // ✅ Fetch Profile Image
     final imageResult = await tokenSharedPrefs.getUserImage();
     imageResult.fold(
-      (failure) => print("❌ Error fetching profile image: ${failure.message}"),
+      (failure) =>
+          debugPrint("❌ Error fetching profile image: ${failure.message}"),
       (image) {
         setState(() {
-          profileImage = image; // ✅ Set the correct image URL
+          profileImage = image;
         });
       },
     );
@@ -67,136 +65,174 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    // Define a maximum width so the layout won't stretch too wide on tablets.
+    const double maxContentWidth = 600;
+
+    final theme = Theme.of(context);
+    final textColor = theme.colorScheme.onSurface;
+
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Profile Info with Edit Icon
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Colors.grey[300],
-                      backgroundImage:
-                          NetworkImage(profileImage), // ✅ Use NetworkImage
-                      onBackgroundImageError: (exception, stackTrace) {
-                        setState(() {
-                          profileImage =
-                              "https://i.pravatar.cc/150?img=3"; // ✅ Default fallback
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+      // SafeArea to avoid system UI overlap (e.g., notches, status bars)
+      body: SafeArea(
+        child: Center(
+          // Constrain the maximum width to create a better layout on larger screens
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: maxContentWidth),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  // ─────────────────────────────────────────────
+                  // Profile Info with Edit Icon
+                  // ─────────────────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 40,
+                            backgroundColor:
+                                theme.colorScheme.surfaceContainerHighest,
+                            backgroundImage: profileImage.isNotEmpty
+                                ? NetworkImage(profileImage)
+                                : const AssetImage("assets/images/profile.jpg"),
+                          ),
+                          const SizedBox(width: 16),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                fullName,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
+                              ),
+                              Text(
+                                contactNumber,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const EditStudentProfileView(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ─────────────────────────────────────────────
+                  // Settings Sections (ListView)
+                  // ─────────────────────────────────────────────
+                  Expanded(
+                    child: ListView(
                       children: [
-                        Text(
-                          fullName, // ✅ Show fetched full name
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                        // General Section
+                        SectionTitle(title: "General", textColor: textColor),
+                        SettingsItem(
+                          icon: Icons.event_note,
+                          title: "Change Password",
+                          textColor: textColor,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const ChangePasswordScreen(),
+                              ),
+                            );
+                          },
                         ),
-                        Text(
-                          contactNumber, // ✅ Show fetched contact number
-                          style:
-                              const TextStyle(fontSize: 14, color: Colors.grey),
+
+                        // Account Setting Section
+                        SectionTitle(
+                            title: "Account Setting", textColor: textColor),
+                        const DarkModeToggle(),
+                        SettingsItem(
+                          icon: Icons.logout,
+                          title: "Logout",
+                          isLogout: true,
+                          textColor: textColor,
+                          onPressed: () {
+                            showMySnackBar(
+                              context: context,
+                              message: 'Logging out...',
+                              color: Colors.red,
+                            );
+                            context.read<StudentProfileBloc>().logout(context);
+                          },
+                        ),
+
+                        // App Setting Section
+                        SectionTitle(
+                            title: "App Setting", textColor: textColor),
+                        SettingsItem(
+                          icon: Icons.language,
+                          title: "Language",
+                          textColor: textColor,
+                          onPressed: () {
+                            // Handle language settings
+                          },
+                        ),
+                        SettingsItem(
+                          icon: Icons.security,
+                          title: "Security",
+                          textColor: textColor,
+                          onPressed: () {
+                            // Handle security settings
+                          },
+                        ),
+
+                        // Support Section
+                        SectionTitle(title: "Support", textColor: textColor),
+                        SettingsItem(
+                          icon: Icons.help_outline,
+                          title: "Help Center",
+                          textColor: textColor,
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HelpCenter(),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
-                  ],
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () {
-                    final state = context.read<StudentProfileBloc>().state;
-
-                    if (state is StudentProfileLoaded ||
-                        state is StudentProfileUpdated) {
-                      final student = state is StudentProfileLoaded
-                          ? state.student
-                          : (state as StudentProfileUpdated).student;
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              EditStudentProfileView(student: student),
-                        ),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Error: No User data available!")),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Settings Sections
-            Expanded(
-              child: ListView(
-                children: [
-                  const SectionTitle(title: "General"),
-                  SettingsItem(
-                      icon: Icons.event_note,
-                      title: "Change Password",
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const ChangePasswordScreen()),
-                        );
-                      }),
-                  const SectionTitle(title: "Account Setting"),
-                  const DarkModeToggle(),
-                  SettingsItem(
-                    icon: Icons.logout,
-                    title: "Logout",
-                    isLogout: true,
-                    onPressed: () {
-                      showMySnackBar(
-                        context: context,
-                        message: 'Logging out...',
-                        color: Colors.red,
-                      );
-                      context.read<StudentProfileBloc>().logout(context);
-                    },
                   ),
-                  const SectionTitle(title: "App Setting"),
-                  const SettingsItem(icon: Icons.language, title: "Language"),
-                  const SettingsItem(icon: Icons.security, title: "Security"),
-                  const SectionTitle(title: "Support"),
-                  SettingsItem(
-                      icon: Icons.help_outline,
-                      title: "Help Center",
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const HelpCenter()),
-                        );
-                      }),
                 ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────
 // Section Title Widget
+// ─────────────────────────────────────────────
 class SectionTitle extends StatelessWidget {
   final String title;
-  const SectionTitle({super.key, required this.title});
+  final Color textColor;
+
+  const SectionTitle({super.key, required this.title, required this.textColor});
 
   @override
   Widget build(BuildContext context) {
@@ -204,19 +240,25 @@ class SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(
-            fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: textColor.withOpacity(0.8),
+        ),
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────
 // Settings Item Widget
+// ─────────────────────────────────────────────
 class SettingsItem extends StatelessWidget {
   final IconData icon;
   final String title;
   final bool isLogout;
   final VoidCallback? onPressed;
+  final Color textColor;
 
   const SettingsItem({
     super.key,
@@ -224,18 +266,19 @@ class SettingsItem extends StatelessWidget {
     required this.title,
     this.isLogout = false,
     this.onPressed,
+    required this.textColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: isLogout ? Colors.red : Colors.black),
+      leading: Icon(icon, color: isLogout ? Colors.red : textColor),
       title: Text(
         title,
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
-          color: isLogout ? Colors.red : Colors.black,
+          color: isLogout ? Colors.red : textColor,
         ),
       ),
       trailing:
@@ -245,7 +288,9 @@ class SettingsItem extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
 // Dark Mode Toggle Widget
+// ─────────────────────────────────────────────
 class DarkModeToggle extends StatelessWidget {
   const DarkModeToggle({super.key});
 
@@ -255,9 +300,13 @@ class DarkModeToggle extends StatelessWidget {
       builder: (context, isDarkMode) {
         return ListTile(
           leading: const Icon(Icons.dark_mode),
-          title: const Text(
+          title: Text(
             "Dark Mode",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           trailing: Switch(
             value: isDarkMode,
@@ -271,11 +320,14 @@ class DarkModeToggle extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────
 // Snackbar Function
-void showMySnackBar(
-    {required BuildContext context,
-    required String message,
-    required Color color}) {
+// ─────────────────────────────────────────────
+void showMySnackBar({
+  required BuildContext context,
+  required String message,
+  required Color color,
+}) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(message, style: const TextStyle(color: Colors.white)),

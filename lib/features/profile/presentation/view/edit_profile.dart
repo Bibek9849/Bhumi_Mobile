@@ -1,16 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:bhumi_mobile/features/profile/data/dto/update_student_profile_dto.dart';
-import 'package:bhumi_mobile/features/profile/domain/entity/student_entity.dart';
-import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/student_profile_bloc.dart';
+import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditStudentProfileView extends StatefulWidget {
-  final StudentEntity student;
-
-  const EditStudentProfileView({super.key, required this.student});
+  const EditStudentProfileView({super.key});
 
   @override
   _EditStudentProfileViewState createState() => _EditStudentProfileViewState();
@@ -18,20 +16,69 @@ class EditStudentProfileView extends StatefulWidget {
 
 class _EditStudentProfileViewState extends State<EditStudentProfileView> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController,
-      _emailController,
-      _phoneController;
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
   File? _img;
+  late TokenSharedPrefs tokenSharedPrefs;
+  String userId = "";
+  String authToken = "";
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.student.fullName);
-    _emailController = TextEditingController(text: widget.student.email);
-    _phoneController = TextEditingController(text: widget.student.contact);
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+    _loadUserData();
   }
 
-  // 🖼️ Image Picker
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    tokenSharedPrefs = TokenSharedPrefs(prefs);
+
+    final nameResult = await tokenSharedPrefs.getUserFullName();
+    final contactResult = await tokenSharedPrefs.getUserContact();
+    final imageResult = await tokenSharedPrefs.getUserImage();
+    final userIdResult = await tokenSharedPrefs.getUserId();
+    final tokenResult = await tokenSharedPrefs.getToken();
+
+    nameResult.fold(
+      (failure) => print("❌ Error fetching full name: ${failure.message}"),
+      (name) => setState(() {
+        _nameController.text = name.isNotEmpty ? name : "User not found";
+      }),
+    );
+
+    contactResult.fold(
+      (failure) => print("❌ Error fetching contact: ${failure.message}"),
+      (contact) => setState(() {
+        _phoneController.text = contact.isNotEmpty ? contact : "Not Provided";
+      }),
+    );
+
+    imageResult.fold(
+      (failure) => print("❌ Error fetching profile image: ${failure.message}"),
+      (image) => setState(() {
+        _img = image.isNotEmpty ? File(image) : null;
+      }),
+    );
+
+    userIdResult.fold(
+      (failure) => print("❌ Error fetching user ID: ${failure.message}"),
+      (id) => setState(() {
+        userId = id;
+      }),
+    );
+
+    tokenResult.fold(
+      (failure) => print("❌ Error fetching token: ${failure.message}"),
+      (token) => setState(() {
+        authToken = token;
+      }),
+    );
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await ImagePicker().pickImage(source: source);
     if (pickedFile != null) {
@@ -41,20 +88,42 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
     }
   }
 
-  // ✅ Handle Profile Update
-  void _updateProfile() {
+  Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
-      context.read<StudentProfileBloc>().add(
-            UpdateStudentProfile(
-              updatedData: UpdateStudentProfileDTO(
-                fullName: _nameController.text,
-                email: _emailController.text,
-                contact: _phoneController.text,
-                image: _img?.path, // Upload only if changed
-              ),
-            ),
-          );
-      Navigator.pop(context);
+      String apiUrl = "http://10.0.2.2:3000/api/users/update-profile/$userId";
+      var request = http.MultipartRequest("PUT", Uri.parse(apiUrl));
+
+      request.fields["fullName"] = _nameController.text;
+      request.fields["email"] = _emailController.text;
+      request.fields["contact"] = _phoneController.text;
+      request.headers["Authorization"] = "Bearer $authToken";
+
+      if (_img != null) {
+        request.files
+            .add(await http.MultipartFile.fromPath("image", _img!.path));
+      }
+
+      try {
+        var response = await request.send();
+        if (response.statusCode == 200) {
+          var responseData = json.decode(await response.stream.bytesToString());
+          print("✅ Profile Updated Successfully: $responseData");
+
+          // ✅ Update SharedPreferences to store the latest data
+          await tokenSharedPrefs.saveUserFullName(_nameController.text);
+          await tokenSharedPrefs.saveUserContact(_phoneController.text);
+          if (_img != null) {
+            await tokenSharedPrefs.saveUserImage(_img!.path);
+          }
+
+          Navigator.pop(context);
+        } else {
+          print(
+              "❌ Failed to update profile. Status Code: ${response.statusCode}");
+        }
+      } catch (error) {
+        print("❌ Error updating profile: $error");
+      }
     }
   }
 
@@ -69,7 +138,6 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // 📸 Profile Image
             Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -78,11 +146,7 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
                   backgroundColor: theme.dividerColor,
                   backgroundImage: _img != null
                       ? FileImage(_img!) as ImageProvider
-                      : (widget.student.image != null &&
-                              widget.student.image!.isNotEmpty
-                          ? NetworkImage(widget.student.image!)
-                          : const AssetImage(
-                              'assets/default_profile.png')), // ✅ Fallback Image
+                      : const AssetImage('assets/default_profile.png'),
                 ),
                 Positioned(
                   bottom: 5,
@@ -135,8 +199,6 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
               ],
             ),
             const SizedBox(height: 24),
-
-            // 📝 Profile Form
             Form(
               key: _formKey,
               child: Column(
@@ -164,29 +226,19 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
               ),
             ),
             const SizedBox(height: 30),
-
-            // ✅ Save Button (With Loading State)
-            BlocBuilder<StudentProfileBloc, StudentProfileState>(
-              builder: (context, state) {
-                return ElevatedButton(
-                  onPressed:
-                      state is StudentProfileLoading ? null : _updateProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.primaryColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: state is StudentProfileLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Save Changes",
-                          style: TextStyle(fontSize: 16)),
-                );
-              },
+            ElevatedButton(
+              onPressed: _updateProfile,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+              child: const Text("Save Changes", style: TextStyle(fontSize: 16)),
             ),
           ],
         ),
@@ -194,31 +246,23 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
     );
   }
 
-  /// 📌 Custom Method for Styled TextFields
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
+  Widget _buildTextField(
+      {required TextEditingController controller,
+      required String label,
+      required IconData icon,
+      TextInputType keyboardType = TextInputType.text}) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15.0)),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return "Please enter your $label";
-        }
-        return null;
-      },
+      validator: (value) =>
+          value == null || value.isEmpty ? "Please enter your $label" : null,
     );
   }
 }

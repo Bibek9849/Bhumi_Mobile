@@ -18,7 +18,6 @@ class _RegisterViewState extends State<RegisterView> {
   final _key = GlobalKey<FormState>();
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
-
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -43,12 +42,8 @@ class _RegisterViewState extends State<RegisterView> {
         setState(() {
           _img = File(image.path);
           // Send image to server
-          context.read<SignupBloc>().add(
-                UploadImage(file: _img!),
-              );
+          context.read<SignupBloc>().add(UploadImage(file: _img!));
         });
-      } else {
-        return;
       }
     } catch (e) {
       debugPrint(e.toString());
@@ -57,11 +52,17 @@ class _RegisterViewState extends State<RegisterView> {
 
   @override
   Widget build(BuildContext context) {
+    // Constrain the main content to a max width (e.g., 600px)
+    const double maxContentWidth = 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFFEAF4EA),
       body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
+        // This Center + ConstrainedBox ensures our content doesn't
+        // stretch across the entire screen on tablets.
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: maxContentWidth),
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 25.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -159,8 +160,9 @@ class _RegisterViewState extends State<RegisterView> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter contact';
+                              return 'Please enter your email';
                             }
+                            // You can add an email pattern check here if needed
                             return null;
                           },
                         ),
@@ -318,7 +320,7 @@ class _RegisterViewState extends State<RegisterView> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => LoginView(),
+                                    builder: (context) => const LoginView(),
                                   ),
                                 );
                               },
