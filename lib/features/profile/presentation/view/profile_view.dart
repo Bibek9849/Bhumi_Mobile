@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
 import 'package:bhumi_mobile/core/theme/theme_cubit.dart';
 import 'package:bhumi_mobile/features/profile/presentation/view/change_password.dart';
@@ -6,6 +9,7 @@ import 'package:bhumi_mobile/features/profile/presentation/view/help_center.dart
 import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/student_profile_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileView extends StatefulWidget {
@@ -21,10 +25,22 @@ class _ProfileViewState extends State<ProfileView> {
   String contactNumber = "Loading...";
   String profileImage = "";
 
+  // Shake detection variables
+  StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
+  int _shakeCount = 0;
+  DateTime? _lastShakeTime;
+
+  // Adjust these thresholds as needed
+  final double shakeThreshold = 15.0; // acceleration threshold
+  final Duration shakeResetTime = const Duration(seconds: 1);
+  final Duration minShakeInterval = const Duration(milliseconds: 500);
+  final int requiredShakes = 3;
+
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _startShakeDetection();
   }
 
   Future<void> _loadUserData() async {
@@ -63,19 +79,62 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
+  void _startShakeDetection() {
+    _accelerometerSubscription =
+        accelerometerEvents.listen((AccelerometerEvent event) {
+      // Calculate the magnitude of the acceleration vector
+      double acceleration =
+          math.sqrt(event.x * event.x + event.y * event.y + event.z * event.z);
+      // When the phone is stationary, the magnitude is ~9.8 due to gravity.
+      // A significant deviation (e.g. > shakeThreshold) indicates a shake.
+      if (acceleration > shakeThreshold) {
+        DateTime now = DateTime.now();
+        // Reset shake count if too much time has passed since the last shake.
+        if (_lastShakeTime == null ||
+            now.difference(_lastShakeTime!) > shakeResetTime) {
+          _shakeCount = 0;
+        }
+        // Ensure a minimum interval between shake events
+        if (_lastShakeTime == null ||
+            now.difference(_lastShakeTime!) > minShakeInterval) {
+          _shakeCount++;
+          _lastShakeTime = now;
+          debugPrint("Shake detected. Count: $_shakeCount");
+
+          if (_shakeCount >= requiredShakes) {
+            debugPrint("Shake threshold reached. Logging out...");
+            // Show a logout snackbar message
+            showMySnackBar(
+              context: context,
+              message: 'Logging out...',
+              color: Colors.red,
+            );
+            // Trigger logout action
+            context.read<StudentProfileBloc>().logout(context);
+            // Reset the counter after logging out
+            _shakeCount = 0;
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _accelerometerSubscription?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Define a maximum width so the layout won't stretch too wide on tablets.
+    // Define a maximum width for better layout on tablets.
     const double maxContentWidth = 600;
-
     final theme = Theme.of(context);
     final textColor = theme.colorScheme.onSurface;
 
     return Scaffold(
-      // SafeArea to avoid system UI overlap (e.g., notches, status bars)
       body: SafeArea(
         child: Center(
-          // Constrain the maximum width to create a better layout on larger screens
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: maxContentWidth),
             child: Padding(
@@ -96,7 +155,8 @@ class _ProfileViewState extends State<ProfileView> {
                                 theme.colorScheme.surfaceContainerHighest,
                             backgroundImage: profileImage.isNotEmpty
                                 ? NetworkImage(profileImage)
-                                : const AssetImage("assets/images/profile.jpg"),
+                                : const AssetImage("assets/images/profile.jpg")
+                                    as ImageProvider,
                           ),
                           const SizedBox(width: 16),
                           Column(
@@ -134,7 +194,6 @@ class _ProfileViewState extends State<ProfileView> {
                     ],
                   ),
                   const SizedBox(height: 24),
-
                   // ─────────────────────────────────────────────
                   // Settings Sections (ListView)
                   // ─────────────────────────────────────────────
@@ -157,7 +216,6 @@ class _ProfileViewState extends State<ProfileView> {
                             );
                           },
                         ),
-
                         // Account Setting Section
                         SectionTitle(
                             title: "Account Setting", textColor: textColor),
@@ -176,7 +234,6 @@ class _ProfileViewState extends State<ProfileView> {
                             context.read<StudentProfileBloc>().logout(context);
                           },
                         ),
-
                         // App Setting Section
                         SectionTitle(
                             title: "App Setting", textColor: textColor),
@@ -196,7 +253,6 @@ class _ProfileViewState extends State<ProfileView> {
                             // Handle security settings
                           },
                         ),
-
                         // Support Section
                         SectionTitle(title: "Support", textColor: textColor),
                         SettingsItem(
