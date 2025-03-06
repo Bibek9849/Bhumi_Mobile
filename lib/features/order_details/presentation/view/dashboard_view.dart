@@ -1,257 +1,271 @@
-// import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
-// import 'package:bhumi_mobile/features/dashboard/domain/entity/product_entity.dart';
-// import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
-// import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
-// import 'package:bhumi_mobile/features/home/presentation/view_model/home_state.dart';
-// import 'package:bhumi_mobile/features/product_details/presentation/view/product_detail_view.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
-// class DashboardView extends StatefulWidget {
-//   const DashboardView({super.key});
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-//   @override
-//   _DashboardViewState createState() => _DashboardViewState();
-// }
+class OrderView extends StatefulWidget {
+  const OrderView({super.key});
 
-// class _DashboardViewState extends State<DashboardView> {
-//   late TokenSharedPrefs tokenSharedPrefs;
-//   String userId = "Loading..."; // Default value
+  @override
+  _OrderViewState createState() => _OrderViewState();
+}
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _loadUserId();
-//   }
+class _OrderViewState extends State<OrderView>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  List<Map<String, dynamic>> orders = [];
+  bool isLoading = true;
 
-//   Future<void> _loadUserId() async {
-//     SharedPreferences prefs = await SharedPreferences.getInstance();
-//     tokenSharedPrefs = TokenSharedPrefs(prefs);
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    fetchOrders();
+  }
 
-//     final result = await tokenSharedPrefs.getUserId();
-//     result.fold(
-//       (failure) {
-//         print("Error fetching userId: ${failure.message}");
-//       },
-//       (id) {
-//         setState(() {
-//           userId = id.isNotEmpty ? id : "User ID not found";
-//         });
-//       },
-//     );
-//   }
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: SafeArea(
-//         child: Padding(
-//           padding: const EdgeInsets.all(16.0),
-//           child: SingleChildScrollView(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 // Header with profile & cart icons
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                   children: [
-//                     BlocBuilder<HomeCubit, HomeState>(
-//                       builder: (context, state) {
-//                         return Row(
-//                           children: [
-//                             const CircleAvatar(
-//                               backgroundImage:
-//                                   AssetImage("assets/images/profile.png"),
-//                             ),
-//                             const SizedBox(width: 10), // Add spacing
-//                             Text(
-//                               "Hi, $userId", // ✅ Display fetched User ID
-//                               style: const TextStyle(
-//                                 fontSize: 16,
-//                                 fontWeight: FontWeight.bold,
-//                               ),
-//                             ),
-//                           ],
-//                         );
-//                       },
-//                     ),
-//                     CircleAvatar(
-//                       backgroundColor: Colors.purple.shade100,
-//                       child:
-//                           const Icon(Icons.shopping_bag, color: Colors.purple),
-//                     ),
-//                   ],
-//                 ),
-//                 const SizedBox(height: 16),
+  Future<void> fetchOrders() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:3000/api/details/show'),
+        headers: {"Content-Type": "application/json"},
+      );
 
-//                 // Search Bar
-//                 TextField(
-//                   decoration: InputDecoration(
-//                     hintText: 'Search',
-//                     prefixIcon: const Icon(Icons.search, color: Colors.grey),
-//                     filled: true,
-//                     fillColor: Colors.grey.shade200,
-//                     border: OutlineInputBorder(
-//                       borderRadius: BorderRadius.circular(30),
-//                       borderSide: BorderSide.none,
-//                     ),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 20),
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          orders = List<Map<String, dynamic>>.from(data["data"]);
+          isLoading = false;
+        });
+      } else {
+        print("Error: ${response.body}");
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      print("Fetch Error: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
-//                 // Categories Section
-//                 _buildSectionHeader("Categories"),
-//                 const SizedBox(height: 10),
-//                 _buildCategoriesList(),
-//                 const SizedBox(height: 20),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOrderList("All"),
+                _buildOrderList("To Pay"),
+                _buildOrderList("To Ship"),
+                _buildOrderList("To Receive"),
+              ],
+            ),
+    );
+  }
 
-//                 // Top Selling Products Section
-//                 _buildSectionHeader("Top Selling"),
-//                 const SizedBox(height: 10),
-//                 _buildProductSection(),
+  Widget _buildOrderList(String filterStatus) {
+    List<Map<String, dynamic>> filteredOrders = filterStatus == "All"
+        ? orders
+        : orders
+            .where((order) => order["orderId"]["status"] == filterStatus)
+            .toList();
 
-//                 const SizedBox(height: 20),
+    if (filteredOrders.isEmpty) {
+      return const Center(
+        child: Text(
+          "No Orders Found",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
 
-//                 // New Arrivals Section
-//                 _buildSectionHeader("New In", isPurple: true),
-//                 const SizedBox(height: 10),
-//                 _buildProductSection(),
-//               ],
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
+    return ListView.builder(
+      itemCount: filteredOrders.length,
+      itemBuilder: (context, index) {
+        return _buildOrderItem(filteredOrders[index]);
+      },
+    );
+  }
 
-//   Widget _buildSectionHeader(String title, {bool isPurple = false}) {
-//     return Row(
-//       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//       children: [
-//         Text(
-//           title,
-//           style: TextStyle(
-//             fontSize: 18,
-//             fontWeight: FontWeight.bold,
-//             color: isPurple ? Colors.purple : Colors.black,
-//           ),
-//         ),
-//         const Text("See All", style: TextStyle(color: Colors.purple)),
-//       ],
-//     );
-//   }
+  Widget _buildOrderItem(Map<String, dynamic> order) {
+    // Prepend base URL to the product image
+    final imageUrl =
+        'http://10.0.2.2:3000/product_type_images/${order["productID"]["image"]}';
 
-//   Widget _buildCategoriesList() {
-//     return BlocBuilder<DashboardBloc, DashboardState>(
-//       builder: (context, state) {
-//         if (state.isLoading) {
-//           return const Center(child: CircularProgressIndicator());
-//         } else if (state.error != null) {
-//           return Center(child: Text(state.error!));
-//         } else if (state.products.isEmpty) {
-//           return const Center(child: Text("No categories available"));
-//         }
+    return GestureDetector(
+      onTap: () {
+        _showOrderDetails(order);
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                width: 70,
+                height: 70,
+                fit: BoxFit.cover,
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(
+                  Icons.image_not_supported,
+                  size: 70,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      order["productID"]["name"],
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 14),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "Rs. ${order["sub_total"]}  |  Qty: ${order["total_quantity"]}",
+                      style:
+                          const TextStyle(color: Colors.black87, fontSize: 14),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "#${order["_id"]}",
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(order["orderId"]["status"]),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      order["orderId"]["status"],
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _deleteOrder(order["_id"]),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-//         return SingleChildScrollView(
-//           scrollDirection: Axis.horizontal,
-//           child: Row(
-//             children: state.products.map((category) {
-//               return Padding(
-//                 padding: const EdgeInsets.only(right: 16.0),
-//                 child: Column(
-//                   children: [
-//                     const SizedBox(height: 5),
-//                     Text(
-//                       category.product_categoryId.categoryName,
-//                       style: const TextStyle(
-//                           fontSize: 14, fontWeight: FontWeight.w600),
-//                     ),
-//                   ],
-//                 ),
-//               );
-//             }).toList(),
-//           ),
-//         );
-//       },
-//     );
-//   }
+  void _deleteOrder(String orderId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('http://10.0.2.2:3000/api/details/$orderId'),
+        headers: {"Content-Type": "application/json"},
+      );
 
-//   Widget _buildProductSection() {
-//     return BlocBuilder<DashboardBloc, DashboardState>(
-//       builder: (context, state) {
-//         if (state.isLoading) {
-//           return const Center(child: CircularProgressIndicator());
-//         } else if (state.error != null) {
-//           return Center(child: Text(state.error!));
-//         } else if (state.products.isEmpty) {
-//           return const Center(child: Text("No products available"));
-//         }
-//         return _buildProductList(context, state.products);
-//       },
-//     );
-//   }
+      if (response.statusCode == 200) {
+        setState(() {
+          orders.removeWhere((order) => order["_id"] == orderId);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Order deleted successfully!")),
+        );
+      } else {
+        print("Delete Error: ${response.body}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${response.body}")),
+        );
+      }
+    } catch (e) {
+      print("Delete Exception: $e");
+    }
+  }
 
-//   Widget _buildProductList(BuildContext context, List<ProductEntity> products) {
-//     return SingleChildScrollView(
-//       scrollDirection: Axis.horizontal,
-//       child: Row(
-//         children: products.map((product) {
-//           print("Product Image URL: ${product.image}"); // ✅ Debugging output
+  void _showOrderDetails(Map<String, dynamic> order) {
+    // Use the same base URL for the image
+    final imageUrl =
+        'http://10.0.2.2:3000/product_type_images/${order["productID"]["image"]}';
 
-//           return GestureDetector(
-//             onTap: () {
-//               Navigator.push(
-//                 context,
-//                 MaterialPageRoute(
-//                   builder: (context) => ProductDetailsPage(product: product),
-//                 ),
-//               );
-//             },
-//             child: Padding(
-//               padding: const EdgeInsets.only(right: 16.0),
-//               child: SizedBox(
-//                 width: 150,
-//                 child: Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     ClipRRect(
-//                       borderRadius: BorderRadius.circular(10),
-//                       child: Image.network(
-//                         'http://10.0.2.2:3000/product_type_images/${product.image}',
-//                         height: 120,
-//                         fit: BoxFit.cover,
-//                         errorBuilder: (context, error, stackTrace) {
-//                           return Image.asset(
-//                             'assets/images/placeholder.png', // ✅ Local fallback image
-//                             height: 120,
-//                             fit: BoxFit.cover,
-//                           );
-//                         },
-//                       ),
-//                     ),
-//                     const SizedBox(height: 5),
-//                     Text(
-//                       product.name,
-//                       style: const TextStyle(
-//                           fontSize: 14, fontWeight: FontWeight.w600),
-//                       maxLines: 1,
-//                       overflow: TextOverflow.ellipsis,
-//                     ),
-//                     const SizedBox(height: 5),
-//                     Text(
-//                       "Rs ${product.price}/ K.G",
-//                       style: const TextStyle(
-//                           fontSize: 14, fontWeight: FontWeight.bold),
-//                     ),
-//                   ],
-//                 ),
-//               ),
-//             ),
-//           );
-//         }).toList(),
-//       ),
-//     );
-//   }
-// }
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Order Details - ${order["_id"]}"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                order["productID"]["name"],
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 5),
+              Text("Price: Rs. ${order["sub_total"]}"),
+              Text("Quantity: ${order["total_quantity"]}"),
+              Text("Status: ${order["orderId"]["status"]}"),
+              Text("Order Date: ${order["orderId"]["createdAt"]}"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case "To Pay":
+        return Colors.red;
+      case "To Ship":
+        return Colors.orange;
+      case "To Receive":
+        return Colors.blue;
+      case "Completed":
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
+  }
+}

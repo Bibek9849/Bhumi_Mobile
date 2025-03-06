@@ -58,7 +58,7 @@ void main() {
       verifyNoMoreInteractions(repository);
     });
 
-    test('should register Bibek Pandey with an image successfully', () async {
+    test('should register user with an image successfully', () async {
       when(() => repository.registerStudent(any()))
           .thenAnswer((_) async => const Right(null));
 

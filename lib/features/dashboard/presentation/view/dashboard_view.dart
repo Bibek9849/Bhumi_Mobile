@@ -278,7 +278,8 @@ class _DashboardViewState extends State<DashboardView> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Image.network(
-                        'http://10.0.2.2:3000/product_type_images/${product.image}',
+                        // 'http://10.0.2.2:3000/product_type_images/${product.image}',
+                        'http://192.168.1.68:3000/product_type_images/${product.image}',
                         height: 120,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {

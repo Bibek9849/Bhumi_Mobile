@@ -1,8 +1,8 @@
 import 'package:bhumi_mobile/app/di/di.dart';
 import 'package:bhumi_mobile/core/theme/app_theme.dart';
 import 'package:bhumi_mobile/core/theme/theme_cubit.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/login/login_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/signup/signup_bloc.dart';
 import 'package:bhumi_mobile/features/splash/presentation/view/splash_view.dart';
 import 'package:bhumi_mobile/features/splash/presentation/view_model/splash_cubit.dart';
 import 'package:flutter/material.dart';

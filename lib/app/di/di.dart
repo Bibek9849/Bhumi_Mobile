@@ -9,8 +9,8 @@ import 'package:bhumi_mobile/features/auth/data/repository/auth_remote_repositor
 import 'package:bhumi_mobile/features/auth/domain/use_case/login_use_case.dart';
 import 'package:bhumi_mobile/features/auth/domain/use_case/register_user_usecase.dart';
 import 'package:bhumi_mobile/features/auth/domain/use_case/upload_image_usecase.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/login/login_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/signup/signup_bloc.dart';
 import 'package:bhumi_mobile/features/category/data/data_source/remote_datasource/category_remote_data_source.dart';
 import 'package:bhumi_mobile/features/dashboard/data/data_source/remote_datasource/product_remote_datasource.dart';
 import 'package:bhumi_mobile/features/dashboard/data/repository/product_remote_repository.dart';

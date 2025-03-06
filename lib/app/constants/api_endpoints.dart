@@ -13,8 +13,8 @@ class ApiEndpoints {
   static const String getStudentProfile =
       "users/getMe"; // ✅ Correct API Endpoint
 
-  static const String imageUrl = "http://10.0.2.2:3000/uploads/";
-  // static const String imageUrl = "http://192.168.1.68:3000/uploads/";
+  // static const String imageUrl = "http://10.0.2.2:3000/uploads/";
+  static const String imageUrl = "http://192.168.1.68:3000/uploads/";
   static const String uploadImage = "/users/uploadImage";
   // ====================== Product Routes ======================
   static const String getAllProduct = "product/getAllProduct";

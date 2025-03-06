@@ -238,6 +238,16 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 8),
+
+                      // ✅ Total Price Display (updates when quantity changes)
+                      Text(
+                        "Total Price: Rs ${totalPrice.toStringAsFixed(2)}",
+                        style: textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
                       const SizedBox(height: 16),
 
                       // ✅ Checkout Button (Fix Overflow Issue)

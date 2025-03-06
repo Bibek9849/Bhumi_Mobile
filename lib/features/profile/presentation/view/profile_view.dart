@@ -153,9 +153,8 @@ class _ProfileViewState extends State<ProfileView> {
                             radius: 40,
                             backgroundColor:
                                 theme.colorScheme.surfaceContainerHighest,
-                            backgroundImage: profileImage.isNotEmpty
-                                ? NetworkImage(profileImage)
-                                : const AssetImage("assets/images/profile.jpg")
+                            backgroundImage:
+                                const AssetImage("assets/images/profile.jpg")
                                     as ImageProvider,
                           ),
                           const SizedBox(width: 16),
@@ -376,9 +375,6 @@ class DarkModeToggle extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
-// Snackbar Function
-// ─────────────────────────────────────────────
 void showMySnackBar({
   required BuildContext context,
   required String message,
