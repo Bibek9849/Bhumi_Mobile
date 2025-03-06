@@ -1,8 +1,8 @@
 import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
 import 'package:bhumi_mobile/features/auth/domain/use_case/login_use_case.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view/register_view.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/login/login_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/signup/signup_bloc.dart';
 import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -23,7 +23,6 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    // For tablets, we often want a narrower column, say max 600 or 700 px.
     const double maxContentWidth = 600;
 
     return FutureBuilder<SharedPreferences>(

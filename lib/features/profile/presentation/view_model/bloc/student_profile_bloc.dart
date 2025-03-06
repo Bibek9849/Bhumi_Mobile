@@ -1,7 +1,7 @@
 import 'package:bhumi_mobile/app/di/di.dart';
 import 'package:bhumi_mobile/core/error/failure.dart';
 import 'package:bhumi_mobile/features/auth/presentation/view/login_view.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/login_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/login/login_bloc.dart';
 import 'package:bhumi_mobile/features/profile/data/dto/update_student_profile_dto.dart';
 import 'package:bhumi_mobile/features/profile/domain/entity/student_entity.dart';
 import 'package:bhumi_mobile/features/profile/domain/use_case/get_student_profile_usecase.dart';

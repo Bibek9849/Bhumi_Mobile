@@ -1,7 +1,7 @@
 import 'package:bhumi_mobile/app/shared_prefs/token_shared_prefs.dart';
 import 'package:bhumi_mobile/core/common/snackbar/my_snackbar.dart';
 import 'package:bhumi_mobile/features/auth/domain/use_case/login_use_case.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/signup/signup_bloc.dart';
 import 'package:bhumi_mobile/features/home/presentation/view/home_view.dart';
 import 'package:bhumi_mobile/features/home/presentation/view_model/home_cubit.dart';
 import 'package:equatable/equatable.dart';

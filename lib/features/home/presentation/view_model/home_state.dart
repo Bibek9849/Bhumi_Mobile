@@ -1,9 +1,9 @@
 import 'package:bhumi_mobile/app/di/di.dart';
 import 'package:bhumi_mobile/features/dashboard/presentation/view/dashboard_view.dart';
 import 'package:bhumi_mobile/features/dashboard/presentation/view_model/bloc/dashboard_bloc.dart';
+import 'package:bhumi_mobile/features/order_details/presentation/view/dashboard_view.dart';
 import 'package:bhumi_mobile/features/profile/presentation/view/profile_view.dart';
 import 'package:bhumi_mobile/features/profile/presentation/view_model/bloc/student_profile_bloc.dart';
-import 'package:bhumi_mobile/view/order_view.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';

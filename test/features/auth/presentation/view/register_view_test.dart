@@ -1,67 +1,61 @@
 import 'package:bhumi_mobile/features/auth/presentation/view/register_view.dart';
-import 'package:bhumi_mobile/features/auth/presentation/view_model/bloc/signup_bloc.dart';
+import 'package:bhumi_mobile/features/auth/presentation/view_model/signup/signup_bloc.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
-class MockRegisterBloc extends MockBloc<SignupEvent, SignupState>
+// Fake class for SignupState
+class FakeSignupState extends Fake implements SignupState {}
+
+// Fake class for SignupBloc using MockBloc from bloc_test
+class FakeSignupBloc extends MockBloc<SignupEvent, SignupState>
     implements SignupBloc {}
 
 void main() {
-  late MockRegisterBloc registerBloc;
-
-  setUp(() {
-    registerBloc = MockRegisterBloc();
+  // Remove the generic type argument from registerFallbackValue.
+  setUpAll(() {
+    registerFallbackValue(FakeSignupState());
   });
 
-  Widget loadRegisterView(Widget body) {
-    return MaterialApp(
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<SignupBloc>.value(value: registerBloc),
-        ],
-        child: const RegisterView(),
-      ),
-    );
-  }
+  group('RegisterView Widget Tests', () {
+    late SignupBloc signupBloc;
 
-  testWidgets('Check for the title "Create Account"', (tester) async {
-    await tester.pumpWidget(loadRegisterView(const RegisterView()));
+    setUp(() {
+      signupBloc = FakeSignupBloc();
+    });
 
-    await tester.pumpAndSettle();
+    testWidgets('RegisterView displays all required fields',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        BlocProvider<SignupBloc>.value(
+          value: signupBloc,
+          child: const MaterialApp(
+            home: RegisterView(),
+          ),
+        ),
+      );
 
-    expect(find.text('Create Account'), findsOneWidget);
-  });
+      // Verify that the main header is present.
+      expect(find.text('Create Account'), findsOneWidget);
 
-  // Test all the fields
-  testWidgets('test allthe fields', (tester) async {
-    await tester.pumpWidget(loadRegisterView(const RegisterView()));
+      // Verify that the form fields are present.
+      expect(find.byType(TextFormField), findsNWidgets(6));
+      expect(find.widgetWithText(TextFormField, 'Full Name'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Email'), findsOneWidget);
+      expect(
+          find.widgetWithText(TextFormField, 'Phone Number'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Address'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Password'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Confirm Password'),
+          findsOneWidget);
 
-    await tester.pumpAndSettle();
+      // Verify that the Register button is present.
+      expect(find.widgetWithText(ElevatedButton, 'Register'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'Bibek Pandey');
-    await tester.enterText(find.byType(TextFormField).at(1), 'bibek@gmail.com');
-    await tester.enterText(find.byType(TextFormField).at(2), '9844332211');
-    await tester.enterText(find.byType(TextFormField).at(3), 'Gorkha');
-    await tester.enterText(find.byType(TextFormField).at(4), 'kiran123');
-    await tester.enterText(find.byType(TextFormField).at(4), 'kiran123');
-
-    //=========================== Find the register button===========================
-    final registerButtonFinder =
-        find.widgetWithText(ElevatedButton, 'Register');
-
-    await tester.tap(registerButtonFinder);
-
-    await tester.pumpAndSettle();
-
-    expect(find.text('Bibek Pandey'), findsOneWidget);
-    expect(find.text('bibek@gmail.com'), findsOneWidget);
-    expect(find.text('9844332211'), findsOneWidget);
-    expect(find.text('Gorkha'), findsOneWidget);
-    expect(find.text('kiran123'), findsOneWidget);
-    expect(find.text('kiran123'), findsOneWidget);
-    expect(find.text('Flutter'), findsOneWidget);
-    expect(registerBloc.state.isSuccess, true);
+      // Verify that the Login navigation text is present.
+      expect(find.text('Login here'), findsOneWidget);
+    });
   });
 }

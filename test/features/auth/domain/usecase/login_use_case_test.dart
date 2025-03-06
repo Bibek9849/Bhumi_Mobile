@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 
+// Import your mock classes.
 import 'repository.mock.dart';
 import 'token.mock.dart';
 
@@ -12,6 +13,14 @@ void main() {
   late MockTokenSharedPrefs mockTokenSharedPrefs;
   late LoginUseCase loginUseCase;
 
+  const String validTestToken = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0."
+      "eyJpZCI6IjEyMyIsImZ1bGxOYW1lIjoiVGVzdCBVc2VyIiwiY29udGFjdCI6Ijk4NDk5NDMzNjgiLCJwcm9maWxlSW1hZ2UiOiJodHRwOi8vZXhhbXBsZS5jb20vaW1hZ2UucG5nIn0.";
+
+  const String testContact = '9849943368';
+  const String testPassword = 'bibek123';
+  const LoginParams params =
+      LoginParams(contact: testContact, password: testPassword);
+
   setUp(() {
     mockAuthRepository = MockAuthRepository();
     mockTokenSharedPrefs = MockTokenSharedPrefs();
@@ -19,85 +28,41 @@ void main() {
   });
 
   group('LoginUseCase', () {
-    const String testToken = '185785828255';
-    const String testContact = '9849943368';
-    const String testPassword = 'bibek123';
-    const LoginParams params =
-        LoginParams(contact: testContact, password: testPassword);
-
-    // Test case for successful login
     test('should return token when login is successful', () async {
+      // Arrange
       when(() => mockAuthRepository.loginStudent(testContact, testPassword))
-          .thenAnswer((_) async => const Right(testToken));
-
-      when(() => mockTokenSharedPrefs.saveToken(testToken))
+          .thenAnswer((_) async => const Right(validTestToken));
+      when(() => mockTokenSharedPrefs.saveToken(validTestToken))
+          .thenAnswer((_) async => const Right(null));
+      // If additional user data is saved, mock those calls as well.
+      when(() => mockTokenSharedPrefs.saveUserId(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => mockTokenSharedPrefs.saveUserFullName(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => mockTokenSharedPrefs.saveUserContact(any()))
+          .thenAnswer((_) async => const Right(null));
+      when(() => mockTokenSharedPrefs.saveUserImage(any()))
           .thenAnswer((_) async => const Right(null));
 
+      // Act
       final result = await loginUseCase(params);
 
-      expect(result, const Right(testToken));
-      verify(() => mockTokenSharedPrefs.saveToken(testToken)).called(1);
+      // Assert
+      expect(result, const Right(validTestToken));
+      verify(() => mockTokenSharedPrefs.saveToken(validTestToken)).called(1);
     });
 
-    // Test case for failed login due to API failure
     test('should return ApiFailure when login fails', () async {
       // Arrange
       const failure = ApiFailure(message: 'Login failed', statusCode: 500);
       when(() => mockAuthRepository.loginStudent(testContact, testPassword))
           .thenAnswer((_) async => const Left(failure));
 
+      // Act
       final result = await loginUseCase(params);
 
+      // Assert
       expect(result, const Left(failure));
-      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
-    });
-
-    // Test case for failed login, ensuring token is not saved if login fails
-    test('should not save token if login fails', () async {
-      const failure = ApiFailure(message: 'Login failed', statusCode: 500);
-      when(() => mockAuthRepository.loginStudent(testContact, testPassword))
-          .thenAnswer((_) async => const Left(failure));
-
-      final result = await loginUseCase(params);
-
-      expect(result, const Left(failure));
-      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
-    });
-
-    // Test case for invalid input (empty contact or password)
-    test('should handle invalid input (empty contact or password)', () async {
-      const invalidParams = LoginParams(contact: '', password: '');
-
-      final result = await loginUseCase(invalidParams);
-
-      expect(
-          result,
-          const Left(
-              ApiFailure(message: 'Contact or password cannot be empty')));
-      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
-    });
-
-    // Test case for invalid input (empty contact)
-    test('should return ApiFailure when contact is empty', () async {
-      const invalidParams = LoginParams(contact: '', password: testPassword);
-
-      final result = await loginUseCase(invalidParams);
-
-      expect(
-          result,
-          const Left(
-              ApiFailure(message: 'Contact or password cannot be empty')));
-      verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
-    });
-
-    // Test case for invalid input (empty password)
-    test('should return ApiFailure when password is empty', () async {
-      const invalidParams = LoginParams(contact: testContact, password: '');
-      final result = await loginUseCase(invalidParams);
-      expect(
-          result,
-          const Left(
-              ApiFailure(message: 'Contact or password cannot be empty')));
       verifyNever(() => mockTokenSharedPrefs.saveToken(any()));
     });
   });

@@ -17,7 +17,6 @@ class EditStudentProfileView extends StatefulWidget {
 class _EditStudentProfileViewState extends State<EditStudentProfileView> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
-  late TextEditingController _emailController;
   late TextEditingController _phoneController;
   File? _img;
   late TokenSharedPrefs tokenSharedPrefs;
@@ -28,7 +27,6 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    _emailController = TextEditingController();
     _phoneController = TextEditingController();
     _loadUserData();
   }
@@ -94,7 +92,6 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
       var request = http.MultipartRequest("PUT", Uri.parse(apiUrl));
 
       request.fields["fullName"] = _nameController.text;
-      request.fields["email"] = _emailController.text;
       request.fields["contact"] = _phoneController.text;
       request.headers["Authorization"] = "Bearer $authToken";
 
@@ -207,13 +204,6 @@ class _EditStudentProfileViewState extends State<EditStudentProfileView> {
                     controller: _nameController,
                     label: "Full Name",
                     icon: Icons.person,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildTextField(
-                    controller: _emailController,
-                    label: "Email",
-                    icon: Icons.email,
-                    keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 12),
                   _buildTextField(
